@@ -41,6 +41,32 @@ METBird/
 
 Open `index.html` in a browser. No build step or server required — it's a static single-page app that calls the MET API directly.
 
+## API Information
+
+### Metropolitan Museum of Art Open Access API
+
+- **Documentation**: [metmuseum.github.io](https://metmuseum.github.io/)
+- **Base URL**: `https://collectionapi.metmuseum.org/public/collection/v1/`
+- **Authentication**: None required — the API is freely available to all users
+- **Rate limit**: 80 requests per second
+- **License**: Artwork metadata and images for 470,000+ works are released under [Creative Commons Zero (CC0)](https://creativecommons.org/publicdomain/zero/1.0/), permitting unrestricted use. Works still under copyright include a `rightsAndReproduction` field for proper attribution.
+- **Endpoints used**:
+  - `/objects/{id}` — fetch full artwork details (title, artist, date, medium, images, etc.)
+- **Best practices followed**:
+  - Requests are batched (5 at a time) to stay well within rate limits
+  - Exponential backoff retry (up to 3 retries with increasing delays)
+  - SessionStorage caching to avoid refetching previously loaded artworks
+  - Background prefetching of the next page for faster browsing
+- **Contact**: openaccess@metmuseum.org
+
+### eBird API / Taxonomy Data
+
+- **Documentation**: [eBird API 2.0](https://documenter.getpostman.com/view/664302/S1ENwy59)
+- **Terms of use**: [eBird API Terms of Use](https://www.birds.cornell.edu/home/ebird-api-terms-of-use/)
+- **Usage in this project**: METBird does **not** make any runtime API calls to eBird. All taxonomy data (species names, scientific names, families, and eBird profile URLs) is pre-built and stored locally in `bird-taxonomy.js`. The eBird API was used only during development to look up species information.
+- **Attribution**: Bird taxonomy data is sourced from [eBird](https://ebird.org/), a project of the [Cornell Lab of Ornithology](https://www.birds.cornell.edu/). eBird links in the app direct users to species profile pages on ebird.org.
+- **License**: Non-commercial use. Commercial use requires prior written permission from the Cornell Lab of Ornithology (ebird@cornell.edu).
+
 ## Credits
 
 Built with data from the [Metropolitan Museum of Art Open Access API](https://metmuseum.github.io/) and [eBird](https://ebird.org/), a project of the [Cornell Lab of Ornithology](https://www.birds.cornell.edu/).
