@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>METbird</title>
+  <script src="scripts/bird-object-ids.js" onerror="window.BIRD_OBJECTS=null"></script>
+  <script src="scripts/bird-taxonomy.js" onerror="window.BIRD_TAXONOMY=null"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,700;1,500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles/style.css" />
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <span class="logo-met">MET</span><span class="logo-bird">bird</span>
+    <span class="logo-tag">birding from <a href="https://www.metmuseum.org/" target="_blank" rel="noopener" class="logo-tag-link">The Metropolitan Museum of Art</a> collection</span>
+  </div>
+  <div class="index-info" id="index-info"></div>
+</header>
+
+<div id="setup">
+  <div class="setup-row">
+    <div class="field">
+      <label for="met-q">Search Bird Artwork</label>
+      <div class="ac-wrap">
+        <input type="text" id="met-q" placeholder="e.g. kingfisher, heron, eagle…" autocomplete="off" />
+        <ul class="ac-list" id="ac-list"></ul>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="searchArt()">Search</button>
+  </div>
+  <div class="setup-row">
+    <div class="field">
+      <label for="series-select">Bird Series</label>
+      <select id="series-select">
+        <option value="">Browse by series…</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<main>
+  <div id="art-panel">
+    <div class="panel-header">
+      <span class="panel-title">MET Museum Collection</span>
+      <span class="count-badge" id="art-count">0</span>
+    </div>
+    <div id="art-grid">
+      <div class="state-box" id="initial-state">
+        <div class="state-icon">🎨</div>
+        <div class="state-title" id="initial-title">Loading index…</div>
+        <div class="state-msg" id="initial-msg">Checking for bird object index.</div>
+      </div>
+    </div>
+    <div class="pagination" id="pagination"></div>
+  </div>
+
+  <div id="detail-panel">
+    <div class="panel-header">
+      <span class="panel-title">Artwork Detail</span>
+    </div>
+    <div id="detail-content">
+      <div class="state-box">
+        <div class="state-icon">🖼️</div>
+        <div class="state-title">No artwork selected</div>
+        <div class="state-msg">Click any artwork on the left to see its full details here.</div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  Bird taxonomy data from <a href="https://ebird.org/" target="_blank" rel="noopener">eBird</a>, a project of the <a href="https://www.birds.cornell.edu/" target="_blank" rel="noopener">Cornell Lab of Ornithology</a>.
+  Artwork data from the <a href="https://metmuseum.github.io/" target="_blank" rel="noopener">Metropolitan Museum of Art Open Access API</a>.
+</footer>
+
+<div id="lightbox" onclick="closeLightbox()">
+  <button class="lb-close" onclick="closeLightbox()" aria-label="Close">&#x2715;</button>
+  <img id="lightbox-img" src="" alt="" onclick="event.stopPropagation()" />
+</div>
+
+<script src="scripts/app.js"></script>
+</body>
+</html>
