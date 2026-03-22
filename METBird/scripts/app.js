@@ -417,6 +417,23 @@ function initAutocomplete() {
       }
     }
     for (const [comName, g] of Object.entries(aliasGroups)) {
+      // If this alias resolves to a name already in the single-word birdNames list,
+      // merge the alias match IDs into that count instead of creating a duplicate entry
+      const lowerComName = comName.toLowerCase();
+      if (nameSet.has(lowerComName) && counts[lowerComName] !== undefined) {
+        // Rebuild count: combine original title matches with alias matches (deduped)
+        const regex = buildPluralRegex(lowerComName);
+        const combinedIds = new Set(g.ids);
+        for (const o of window.BIRD_OBJECTS) { if (regex.test(o.title)) combinedIds.add(o.id); }
+        // Also add overridden artworks
+        if (window.BIRD_TAXONOMY_OVERRIDES) {
+          for (const [id, ovr] of Object.entries(window.BIRD_TAXONOMY_OVERRIDES)) {
+            if (ovr.comName === comName) combinedIds.add(Number(id));
+          }
+        }
+        counts[lowerComName] = combinedIds.size;
+        continue;
+      }
       aliasSuggestions.push({ name: comName, searchNames: g.searchNames, count: g.ids.size, sciName: g.sciName });
     }
     for (const t of window.BIRD_TAXONOMY) {
