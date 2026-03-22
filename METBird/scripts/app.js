@@ -357,8 +357,8 @@ function initAutocomplete() {
     'whistler','rail','merlin','hobby','monarch','booby',
     'harrier','jaeger','skimmer','ani','frigate',
     'hen','ostrich','skylark','kinglet','bobwhite','quetzal',
-    'redstart','pintail','peafowl','dodo','nightjar','titmouse',
-    'chaffinch','cassowary','eider','merganser','gallinule',
+    'redstart','peafowl','dodo','nightjar','titmouse',
+    'chaffinch','cassowary','merganser','gallinule',
     'meadowlark','emu','moorhen','grebe','goshawk','kingbird',
     'siskin','yellowhammer','towhee','bobolink','creeper',
   ];
@@ -420,22 +420,35 @@ function initAutocomplete() {
       // If this alias resolves to a name already in the single-word birdNames list,
       // merge the alias match IDs into that count instead of creating a duplicate entry
       const lowerComName = comName.toLowerCase();
-      if (nameSet.has(lowerComName) && counts[lowerComName] !== undefined) {
-        // Rebuild count: combine original title matches with alias matches (deduped)
-        const regex = buildPluralRegex(lowerComName);
+      // Check if comName itself is a birdNames word
+      let mergeTarget = (nameSet.has(lowerComName) && counts[lowerComName] !== undefined) ? lowerComName : null;
+      // Also check if an alias searchName starts with a birdNames word
+      // (e.g. "Eider Duck" starts with "eider" which is in birdNames)
+      // Only check the first word to avoid merging into generic terms like "duck" or "goose"
+      if (!mergeTarget) {
+        for (const sn of g.searchNames) {
+          const firstWord = sn.toLowerCase().split(/[\s-]+/)[0];
+          if (nameSet.has(firstWord) && counts[firstWord] !== undefined) { mergeTarget = firstWord; break; }
+        }
+      }
+      if (mergeTarget) {
+        // Merge alias match IDs into the birdNames count
+        const regex = buildPluralRegex(mergeTarget);
         const combinedIds = new Set(g.ids);
         for (const o of window.BIRD_OBJECTS) { if (regex.test(o.title)) combinedIds.add(o.id); }
-        // Also add overridden artworks
         if (window.BIRD_TAXONOMY_OVERRIDES) {
           for (const [id, ovr] of Object.entries(window.BIRD_TAXONOMY_OVERRIDES)) {
             if (ovr.comName === comName) combinedIds.add(Number(id));
           }
         }
-        counts[lowerComName] = combinedIds.size;
+        counts[mergeTarget] = combinedIds.size;
         continue;
       }
+      // Store alias for later dedup against taxCounts
       aliasSuggestions.push({ name: comName, searchNames: g.searchNames, count: g.ids.size, sciName: g.sciName });
     }
+    // Build taxCounts first, then dedup aliasSuggestions against them
+    const _pendingAliases = aliasSuggestions.splice(0);
     for (const t of window.BIRD_TAXONOMY) {
       if (t.matchName) continue;
       // Skip single-word names already in birdNames list
@@ -450,6 +463,28 @@ function initAutocomplete() {
         }
       }
       if (n > 0) taxCounts[t.comName] = { count: n, sciName: t.sciName };
+    }
+    // Merge pending aliases: if alias comName already exists in taxCounts, merge counts; otherwise add to aliasSuggestions
+    for (const a of _pendingAliases) {
+      if (taxCounts[a.name]) {
+        const tc = taxCounts[a.name];
+        // Rebuild with deduped IDs from both alias and taxonomy title matches
+        const regex = buildPluralRegex(a.name);
+        const combinedIds = new Set();
+        for (const sn of a.searchNames) {
+          const sr = buildPluralRegex(sn);
+          for (const o of window.BIRD_OBJECTS) { if (sr.test(o.title)) combinedIds.add(o.id); }
+        }
+        for (const o of window.BIRD_OBJECTS) { if (regex.test(o.title)) combinedIds.add(o.id); }
+        if (window.BIRD_TAXONOMY_OVERRIDES) {
+          for (const [id, ovr] of Object.entries(window.BIRD_TAXONOMY_OVERRIDES)) {
+            if (ovr.comName === a.name) combinedIds.add(Number(id));
+          }
+        }
+        tc.count = combinedIds.size;
+      } else {
+        aliasSuggestions.push(a);
+      }
     }
   }
 
