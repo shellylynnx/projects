@@ -738,6 +738,8 @@ function selectArtwork(id) {
       ${buildSeriesLink(obj.title)}
       ${buildTaxonomyHtml(obj.title, obj.objectID)}
     </div>`;
+
+  openDetail();
 }
 
 function showDetailPlaceholder() {
@@ -772,6 +774,16 @@ function buildTaxonomyHtml(title, objectID) {
   }
   if (!taxa.length) return '';
   return taxa.map(renderTaxon).join('');
+}
+
+/* ── Mobile detail panel ─────────────────────────────────────── */
+function isMobileLayout() { return window.innerWidth <= 768; }
+
+function openDetail() {
+  if (isMobileLayout()) $('detail-panel').classList.add('mobile-open');
+}
+function closeDetail() {
+  $('detail-panel').classList.remove('mobile-open');
 }
 
 /* ── Lightbox ─────────────────────────────────────────────────── */
