@@ -7,5 +7,7 @@ window.BIRD_TAXONOMY_OVERRIDES = {
   422103: {"comName":"Summer Tanager","sciName":"Piranga rubra","family":"Cardinals and Allies","ebirdUrl":"https://ebird.org/species/sumtan"},
   360920: {"matchName":"Eagle","comName":"Golden Eagle","sciName":"Aquila chrysaetos","family":"Hawks, Eagles, and Kites","ebirdUrl":"https://ebird.org/species/goleag"},
   712770: {"comName":"Blue-and-yellow Macaw","sciName":"Ara ararauna","family":"New World and African Parrots","ebirdUrl":"https://ebird.org/species/baymac"},
-  406632: {"comName":"Red-headed Woodpecker","sciName":"Melanerpes erythrocephalus","family":"Woodpeckers","ebirdUrl":"https://ebird.org/species/rehwoo"}
+  406632: {"comName":"Red-headed Woodpecker","sciName":"Melanerpes erythrocephalus","family":"Woodpeckers","ebirdUrl":"https://ebird.org/species/rehwoo"},
+  406652: {"comName":"Bobolink","sciName":"Dolichonyx oryzivorus","family":"Troupials and Allies","ebirdUrl":"https://ebird.org/species/boboli"},
+  421611: {"comName":"Bobolink","sciName":"Dolichonyx oryzivorus","family":"Troupials and Allies","ebirdUrl":"https://ebird.org/species/boboli"}
 };
