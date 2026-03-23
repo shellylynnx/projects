@@ -344,22 +344,22 @@ function initAutocomplete() {
     'starling','thrush','warbler','bluebird','macaw','cormorant','albatross',
     'condor','rooster','goldfinch','chickadee','lark','wren','robin','jay',
     'crane','cardinal','bunting','nightingale','martin','swift','grosbeak',
-    'tanager','nuthatch','sandpiper','plover','tern','gull','cuckoo',
+    'tanager','sandpiper','plover','tern','gull','cuckoo',
     'grouse','pitta','myna','mynah','tit','roller','shrike','wagtail',
     'dipper','flycatcher','chat','bulbul','manakin','hornbill','bee-eater',
     'snipe','curlew','lapwing','avocet','puffin','gannet','petrel',
-    'waxwing','vireo','mockingbird','catbird','wheatear','pipit',
+    'waxwing','mockingbird','catbird','wheatear','pipit',
     'partridge','bullfinch','rook','teal','mallard','buzzard','loon',
     'parakeet','bittern','ptarmigan','linnet','blackbird','hoopoe',
-    'jackdaw','fantail','barbet','coot','kestrel','trogon','spoonbill',
-    'cock','fowl','phalarope','crossbill','godwit','thrasher',
+    'jackdaw','fantail','coot','kestrel','trogon','spoonbill',
+    'cock','fowl','phalarope','crossbill',
     'turnstone','redshank','peregrine','aracari','bustard','auk',
     'whistler','rail','merlin','hobby','monarch','booby',
     'harrier','jaeger','skimmer','ani','frigate',
     'hen','ostrich','skylark','kinglet','bobwhite','quetzal',
-    'redstart','peafowl','dodo','nightjar','titmouse',
-    'chaffinch','cassowary','merganser','gallinule',
-    'meadowlark','emu','moorhen','grebe','goshawk','kingbird',
+    'redstart','dodo','nightjar','titmouse',
+    'chaffinch','cassowary',
+    'emu','moorhen','goshawk','kingbird',
     'siskin','yellowhammer','towhee','bobolink','creeper',
   ];
   const nameSet = new Set(birdNames);
@@ -442,6 +442,11 @@ function initAutocomplete() {
           }
         }
         counts[mergeTarget] = combinedIds.size;
+        // Still add the species as a suggestion so it appears in autocomplete
+        // (e.g. "Indian Peafowl" should appear even though count merges into "peacock")
+        if (g.ids.size > 0) {
+          aliasSuggestions.push({ name: comName, searchNames: g.searchNames, count: g.ids.size, sciName: g.sciName });
+        }
         continue;
       }
       // Store alias for later dedup against taxCounts
@@ -817,10 +822,12 @@ function buildTaxonomyHtml(title, objectID) {
   const override = window.BIRD_TAXONOMY_OVERRIDES?.[objectID];
   const taxa = findTaxonomy(title);
   if (override) {
-    // Show override entry plus any additional regex matches (excluding same species as override)
+    // Show override entry plus any additional regex matches (excluding same species or same matchName as override)
     let html = renderTaxon(override);
     for (const taxon of taxa) {
-      if (taxon.ebirdUrl !== override.ebirdUrl) html += renderTaxon(taxon);
+      if (taxon.ebirdUrl === override.ebirdUrl) continue;
+      if (override.matchName && taxon.matchName === override.matchName) continue;
+      html += renderTaxon(taxon);
     }
     return html;
   }
