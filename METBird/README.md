@@ -4,18 +4,19 @@ Browse bird-related artwork from [The Metropolitan Museum of Art](https://www.me
 
 ## Features
 
-- **9,761 bird artworks** indexed from the MET Open Access collection
-- **Autocomplete search** with 134 species and 36 historical/regional name aliases
-- **Bird Series browser** — filter by named art series (e.g., Birds of America, Game Birds)
-- **Artwork detail panel** with full MET metadata, zoomable images, and eBird taxonomy links
+- **9,752 bird artworks** indexed from the MET Open Access collection
+- **Species-aware autocomplete search** with 204 species and 98 historical/regional name aliases — clicking a species finds all artworks including those matched via former names
+- **Bird Series browser** — filter by named art series (e.g., Birds of America, Game Birds, Drawings Made in the United States)
+- **Multi-plate artwork support** — multi-image MET objects (e.g., Audubon's *Birds of America*) are split into individual plates, each with its own image and eBird taxonomy
+- **Artwork detail panel** with full MET metadata, zoomable images, plate captions, and eBird taxonomy links
 - **Taxonomy matching** — automatically identifies bird species from artwork titles and displays scientific names, family, and eBird profile links
-- **Per-artwork overrides** for titles where the species can't be determined from the name alone
+- **Per-artwork overrides** for titles where the species can't be determined from the name alone (e.g., East Asian peacock artworks mapped to Green Peafowl)
 
 ## Data Sources
 
 - **Artwork data**: [Metropolitan Museum of Art Open Access API](https://metmuseum.github.io/) — fetched at runtime for artwork details (images, dates, artists, etc.)
 - **Bird taxonomy**: [eBird](https://ebird.org/) by the [Cornell Lab of Ornithology](https://www.birds.cornell.edu/) — pre-built species data stored locally for instant matching
-- **Artwork index**: Pre-built list of 9,761 MET object IDs with bird-related titles, stored in `bird-object-ids.js`
+- **Artwork index**: Pre-built list of 9,752 MET object IDs with bird-related titles, stored in `bird-object-ids.js`
 
 ## Project Structure
 
@@ -25,7 +26,7 @@ METBird/
   scripts/
     app.js                     # Application logic (search, pagination, detail panel, taxonomy)
     bird-object-ids.js         # Pre-built index of bird artwork object IDs and titles
-    bird-taxonomy.js           # eBird taxonomy data and per-artwork overrides
+    bird-taxonomy.js           # eBird taxonomy data, per-artwork overrides, and plate entries
   styles/
     style.css                  # All styling
 ```
@@ -35,7 +36,9 @@ METBird/
 1. On load, the app reads the pre-built bird artwork index (`bird-object-ids.js`) and taxonomy data (`bird-taxonomy.js`)
 2. Users search by bird name or browse by series — results are filtered client-side from the index
 3. Artwork details (images, artist, date, medium, etc.) are fetched from the MET API on demand with caching and retry logic
-4. Bird species are matched from artwork titles using plural-aware regex patterns and displayed with eBird taxonomy info
+4. For plate entries (multi-image artworks like Audubon's *Birds of America*), the app fetches the parent MET object and overlays plate-specific images and taxonomy
+5. Bird species are matched from artwork titles using plural-aware regex patterns and displayed with eBird taxonomy info
+6. Autocomplete suggestions are species-aware — selecting a species shows all artworks matched by current name, historical aliases, and per-artwork overrides
 
 ## Usage
 
