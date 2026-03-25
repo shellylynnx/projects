@@ -150,6 +150,21 @@ async function searchArt() {
 function totalPages() { return Math.ceil(_allMatches.length / PAGE_SIZE); }
 
 const fetchObj = async (id, retries = 3) => {
+  // Plate entries: fetch parent object, then overlay plate-specific data
+  const plate = window.BIRD_PLATES?.[id];
+  if (plate) {
+    const parent = await fetchObj(plate.parentId, retries);
+    if (!parent) return null;
+    const obj = Object.assign({}, parent);
+    obj.objectID = id;
+    obj._plateParentId = plate.parentId;
+    obj.primaryImage = plate.imageUrl;
+    obj.primaryImageSmall = plate.imageUrl;
+    // Keep parent title; plate caption shown separately
+    obj._plateCaption = plate.caption;
+    obj.objectURL = `https://www.metmuseum.org/art/collection/search/${plate.parentId}`;
+    return obj;
+  }
   const cacheKey = `met_${id}`;
   try { const c = sessionStorage.getItem(cacheKey); if (c) return JSON.parse(c); } catch {}
   for (let i = 0; i <= retries; i++) {
@@ -469,25 +484,43 @@ function initAutocomplete() {
       }
       if (n > 0) taxCounts[t.comName] = { count: n, sciName: t.sciName };
     }
+    // Count all artworks for a species: alias matches (with domination check) + comName matches + overrides
+    function countSpeciesArtworks(searchNames, comName) {
+      const combinedIds = new Set();
+      for (const sn of searchNames) {
+        const sr = buildPluralRegex(sn);
+        for (const o of window.BIRD_OBJECTS) {
+          if (combinedIds.has(o.id)) continue;
+          const m = o.title.match(sr);
+          if (!m) continue;
+          const pos = m.index, end = pos + m[0].length;
+          const dominated = _taxonRegexes.some(tr => {
+            if (tr.data.matchName === sn || tr.data.comName === sn) return false;
+            const m2 = o.title.match(tr.regex);
+            return m2 && m2.index <= pos && m2.index + m2[0].length >= end && m2[0].length > m[0].length;
+          });
+          if (!dominated) {
+            const ovr = window.BIRD_TAXONOMY_OVERRIDES?.[o.id];
+            if (ovr && ovr.matchName === sn && ovr.comName !== comName) continue;
+            combinedIds.add(o.id);
+          }
+        }
+      }
+      const comRegex = buildPluralRegex(comName);
+      for (const o of window.BIRD_OBJECTS) { if (comRegex.test(o.title)) combinedIds.add(o.id); }
+      if (window.BIRD_TAXONOMY_OVERRIDES) {
+        for (const [id, ovr] of Object.entries(window.BIRD_TAXONOMY_OVERRIDES)) {
+          if (ovr.comName === comName) combinedIds.add(Number(id));
+        }
+      }
+      return combinedIds.size;
+    }
     // Merge pending aliases: if alias comName already exists in taxCounts, merge counts; otherwise add to aliasSuggestions
     for (const a of _pendingAliases) {
       if (taxCounts[a.name]) {
-        const tc = taxCounts[a.name];
-        // Rebuild with deduped IDs from both alias and taxonomy title matches
-        const regex = buildPluralRegex(a.name);
-        const combinedIds = new Set();
-        for (const sn of a.searchNames) {
-          const sr = buildPluralRegex(sn);
-          for (const o of window.BIRD_OBJECTS) { if (sr.test(o.title)) combinedIds.add(o.id); }
-        }
-        for (const o of window.BIRD_OBJECTS) { if (regex.test(o.title)) combinedIds.add(o.id); }
-        if (window.BIRD_TAXONOMY_OVERRIDES) {
-          for (const [id, ovr] of Object.entries(window.BIRD_TAXONOMY_OVERRIDES)) {
-            if (ovr.comName === a.name) combinedIds.add(Number(id));
-          }
-        }
-        tc.count = combinedIds.size;
+        taxCounts[a.name].count = countSpeciesArtworks(a.searchNames, a.name);
       } else {
+        a.count = countSpeciesArtworks(a.searchNames, a.name);
         aliasSuggestions.push(a);
       }
     }
@@ -542,7 +575,7 @@ function initAutocomplete() {
         const s = list._suggestions[+li.dataset.idx];
         list.classList.remove('open');
         if (s.searchNames) {
-          // Alias entry — search all former names, filter out dominated matches
+          // Alias entry — search all former/regional names, filter out dominated matches
           const combined = new Map();
           for (const sn of s.searchNames) {
             const regex = buildPluralRegex(sn);
@@ -562,6 +595,20 @@ function initAutocomplete() {
               }
             }
           }
+          // Also include artworks matching the current species name (comName)
+          const comRegex = buildPluralRegex(s.name);
+          for (const o of window.BIRD_OBJECTS) {
+            if (!combined.has(o.id) && comRegex.test(o.title)) combined.set(o.id, o);
+          }
+          // Include overridden artworks that map to this species
+          if (window.BIRD_TAXONOMY_OVERRIDES) {
+            for (const [id, ovr] of Object.entries(window.BIRD_TAXONOMY_OVERRIDES)) {
+              if (ovr.comName === s.name) {
+                const obj = window.BIRD_OBJECTS.find(o => o.id === +id);
+                if (obj && !combined.has(obj.id)) combined.set(obj.id, obj);
+              }
+            }
+          }
           _allMatches = [...combined.values()].sort((a, b) => (b.img || 0) - (a.img || 0));
           _pageCache = {};
           window._metObjects = {};
@@ -570,12 +617,36 @@ function initAutocomplete() {
           $('series-select').value = '';
           goToPage(1);
         } else {
-          // Direct taxonomy name — include any overridden artworks
+          // Direct taxonomy name — include aliases and overridden artworks
           const searchTerm = s.searchName || s.name;
           const regex = buildPluralRegex(searchTerm);
           const combined = new Map();
           for (const o of window.BIRD_OBJECTS) {
             if (regex.test(o.title)) combined.set(o.id, o);
+          }
+          // Also include artworks matching any alias that resolves to this species (with domination check)
+          if (window.BIRD_TAXONOMY) {
+            for (const t of window.BIRD_TAXONOMY) {
+              if (t.matchName && t.comName === s.name) {
+                const aliasRegex = buildPluralRegex(t.matchName);
+                for (const o of window.BIRD_OBJECTS) {
+                  if (combined.has(o.id)) continue;
+                  const m = o.title.match(aliasRegex);
+                  if (!m) continue;
+                  const pos = m.index, end = pos + m[0].length;
+                  const dominated = _taxonRegexes.some(tr => {
+                    if (tr.data.matchName === t.matchName || tr.data.comName === t.matchName) return false;
+                    const m2 = o.title.match(tr.regex);
+                    return m2 && m2.index <= pos && m2.index + m2[0].length >= end && m2[0].length > m[0].length;
+                  });
+                  if (!dominated) {
+                    const ovr = window.BIRD_TAXONOMY_OVERRIDES?.[o.id];
+                    if (ovr && ovr.matchName === t.matchName && ovr.comName !== s.name) continue;
+                    combined.set(o.id, o);
+                  }
+                }
+              }
+            }
           }
           if (window.BIRD_TAXONOMY_OVERRIDES) {
             for (const [id, ovr] of Object.entries(window.BIRD_TAXONOMY_OVERRIDES)) {
@@ -620,6 +691,13 @@ function initSeriesDropdown() {
   if (!window.BIRD_OBJECTS) return;
   const map = {};
   for (const o of window.BIRD_OBJECTS) {
+    // Plate entries go into the Drawings Made in the United States series
+    if (window.BIRD_PLATES?.[o.id]) {
+      const name = 'Drawings Made in the United States';
+      if (!map[name]) map[name] = [];
+      map[name].push(o);
+      continue;
+    }
     const series = extractSeries(o.title);
     if (series) {
       if (!map[series]) map[series] = [];
@@ -735,6 +813,7 @@ function appendCards(objects) {
 
 async function retryFallbacks(fallbacks) {
   for (const fb of fallbacks) {
+    if (window.BIRD_PLATES?.[fb.objectID]) continue; // plate entries don't retry
     try {
       const r = await fetch(`https://collectionapi.metmuseum.org/public/collection/v1/objects/${fb.objectID}`);
       const data = await r.json();
@@ -785,6 +864,7 @@ function selectArtwork(id) {
     ${imgHtml}
     <div class="detail-meta">
       <div class="detail-title">${esc(obj.title) || 'Untitled'}</div>
+      ${obj._plateCaption ? `<div class="detail-row" style="font-style:italic;color:var(--muted)">${esc(obj._plateCaption)}</div>` : ''}
       ${obj.artistDisplayName ? `<div class="detail-artist">${esc(obj.artistDisplayName)}</div>` : ''}
       ${obj.objectDate        ? `<div class="detail-row">${esc(obj.objectDate)}</div>` : ''}
       ${obj.medium            ? `<div class="detail-row">${esc(obj.medium)}</div>` : ''}
@@ -818,6 +898,10 @@ function buildTaxonomyHtml(title, objectID) {
     <div class="taxonomy-family">${esc(taxon.family)}</div>
     <a class="taxonomy-link" href="${esc(taxon.ebirdUrl)}" target="_blank" rel="noopener">View on eBird ↗</a>
   </div>`;
+  // Plate entries have embedded taxonomy
+  const plate = window.BIRD_PLATES?.[objectID];
+  if (plate && plate.ebirdUrl) return renderTaxon(plate);
+  if (plate && !plate.ebirdUrl) return ''; // e.g. Cuvier's Kinglet — no eBird data
   // Check for per-artwork overrides
   const override = window.BIRD_TAXONOMY_OVERRIDES?.[objectID];
   const taxa = findTaxonomy(title);
