@@ -69,11 +69,14 @@ function initMap() {
     if (attrEl) { attrEl.classList.remove('maplibregl-compact-show'); attrEl.removeAttribute('open'); }
     document.body.classList.remove('map-loading');
 
-    // ── Borough boundaries ──────────────────────────────────────
+    // ── Borough boundaries (loaded async to avoid blocking) ─────
     map.addSource('boroughs', {
       type: 'geojson',
-      data: 'data/boroughs.geojson',
+      data: { type: 'FeatureCollection', features: [] },
     });
+    fetch('data/boroughs.geojson').then(r => r.json()).then(d => {
+      if (map.getSource('boroughs')) map.getSource('boroughs').setData(d);
+    }).catch(() => {});
 
     map.addLayer({
       id: 'borough-fill',
@@ -454,9 +457,10 @@ function initMap() {
       map.on('mouseleave', layerId, () => { map.getCanvas().style.cursor = ''; });
     });
 
-    // Load data once map is ready — Dog Runs is the default mode
-    loadAllParks();
+    // Load dog runs first (default mode) — defer parks until needed
     loadDogRuns();
+    // Load parks layer after a short delay so it doesn't block dog runs render
+    setTimeout(loadAllParks, 800);
     // Set initial UI state to match default dogruns mode
     document.getElementById('controls').dataset.mode = 'dogruns';
     document.querySelector('.panel-title').textContent = 'Find a Dog Run';
@@ -1113,6 +1117,7 @@ function onDataModeChange(mode) {
     isComplaints ? 'Offleashed Dog Reports' : isDogRuns ? 'Find a Dog Run' : 'Sick/Injured Animal Reports';
 
   if (isComplaints) {
+    ensureParkList();
     loadComplaints();
   } else if (isDogRuns) {
     renderDogRunList();
@@ -1620,5 +1625,7 @@ function showLoadError() {
 
 // ── Boot ─────────────────────────────────────────────────────────
 initMap();
-loadParkList();
 initDogRunZipAutocomplete();
+// Defer park list load — only needed for complaints mode filter
+let parkListLoaded = false;
+function ensureParkList() { if (!parkListLoaded) { parkListLoaded = true; loadParkList(); } }
