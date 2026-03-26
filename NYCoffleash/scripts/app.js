@@ -51,18 +51,24 @@ function initMap() {
     attributionControl: false,
   });
   map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right');
+  // Mark body so CSS can keep attribution collapsed until map loads
+  document.body.classList.add('map-loading');
 
   map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-left');
 
-  map.once('idle', () => {
-    const attrEl = document.querySelector('.maplibregl-ctrl-attrib');
-    if (attrEl) {
-      attrEl.classList.remove('maplibregl-compact-show');
-      attrEl.removeAttribute('open');
+  // Handle map load errors — prompt user to reload
+  map.on('error', (e) => {
+    if (e.error && e.error.status === 0) {
+      showLoadError();
     }
   });
 
   map.on('load', () => {
+    // Close attribution and remove loading guard
+    const attrEl = document.querySelector('.maplibregl-ctrl-attrib');
+    if (attrEl) { attrEl.classList.remove('maplibregl-compact-show'); attrEl.removeAttribute('open'); }
+    document.body.classList.remove('map-loading');
+
     // ── Borough boundaries ──────────────────────────────────────
     map.addSource('boroughs', {
       type: 'geojson',
@@ -808,7 +814,7 @@ async function loadDogRuns() {
     applyDogRunsData(data);
     try { localStorage.setItem(CACHE_KEY, JSON.stringify({ data, ts: Date.now() })); } catch (_) {}
   } catch (e) {
-    // silently fail
+    showLoadError();
   }
 }
 
@@ -1599,6 +1605,17 @@ function updateAnimalStats(data) {
     <span class="stat stat-closed"><strong>${unhealthy}</strong> unhealthy</span>
     <span class="stat"><strong>${doa}</strong> DOA</span>
     <span class="stat"><strong>${species}</strong> species</span>`;
+}
+
+// ── Load error banner ─────────────────────────────────────────────
+let loadErrorShown = false;
+function showLoadError() {
+  if (loadErrorShown) return;
+  loadErrorShown = true;
+  const banner = document.createElement('div');
+  banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#fef2f2;color:#991b1b;padding:.75rem 1rem;text-align:center;font-size:.85rem;font-family:inherit;border-bottom:2px solid #fca5a5;display:flex;align-items:center;justify-content:center;gap:.5rem;flex-wrap:wrap;';
+  banner.innerHTML = '<span>The page didn\u2019t load properly.</span><button onclick="location.reload()" style="background:#991b1b;color:#fff;border:none;border-radius:6px;padding:.35rem .9rem;font-size:.82rem;font-weight:600;cursor:pointer;">Reload Page</button>';
+  document.body.prepend(banner);
 }
 
 // ── Boot ─────────────────────────────────────────────────────────
