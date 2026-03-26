@@ -851,6 +851,8 @@ function applyDogRunsData(data) {
   }
   populateDogRunFilters();
   if (currentMode === 'dogruns') renderDogRunList();
+  // Dismiss loading screen once default data is ready
+  dismissLoadingScreen();
 }
 
 function toggleDogRunLayer(visible) {
@@ -1617,11 +1619,24 @@ let loadErrorShown = false;
 function showLoadError() {
   if (loadErrorShown) return;
   loadErrorShown = true;
+  dismissLoadingScreen();
   const banner = document.createElement('div');
   banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#fef2f2;color:#991b1b;padding:.75rem 1rem;text-align:center;font-size:.85rem;font-family:inherit;border-bottom:2px solid #fca5a5;display:flex;align-items:center;justify-content:center;gap:.5rem;flex-wrap:wrap;';
   banner.innerHTML = '<span>The page didn\u2019t load properly.</span><button onclick="location.reload()" style="background:#991b1b;color:#fff;border:none;border-radius:6px;padding:.35rem .9rem;font-size:.82rem;font-weight:600;cursor:pointer;">Reload Page</button>';
   document.body.prepend(banner);
 }
+
+// ── Loading screen ────────────────────────────────────────────────
+let loadingDismissed = false;
+function dismissLoadingScreen() {
+  if (loadingDismissed) return;
+  loadingDismissed = true;
+  document.body.classList.add('app-ready');
+  const el = document.getElementById('app-loading');
+  if (el) { el.style.transition = 'opacity .3s ease'; el.style.opacity = '0'; setTimeout(() => el.remove(), 350); }
+}
+// Fallback: dismiss after 8s even if data hasn't loaded
+setTimeout(dismissLoadingScreen, 8000);
 
 // ── Boot ─────────────────────────────────────────────────────────
 initMap();
