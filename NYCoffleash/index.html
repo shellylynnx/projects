@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NYCoffleash — NYC Parks &amp; Animal Resource and Reporting</title>
+  <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet"
+        integrity="sha384-MinO0mNliZ3vwppuPOUnGa+iq619pfMhLVUXfC4LHwSCvF9H+6P/KO4Q7qBOYV5V" crossorigin="anonymous" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles/style.css" />
+</head>
+<body>
+<noscript>
+  <div style="padding:2rem;text-align:center;font-family:system-ui,sans-serif;">
+    <h2>NYCoffleash requires JavaScript</h2>
+    <p>Please enable JavaScript in your browser to use this application.</p>
+  </div>
+</noscript>
+
+<header>
+  <div class="logo">
+    <span class="logo-off"><span class="logo-nyc">NYC</span>off</span><span class="logo-leash">leash</span>
+    <span class="logo-tag">NYC parks &amp; animal resource and reporting</span>
+  </div>
+  <div class="stats" id="stats"></div>
+</header>
+
+<div id="controls" data-mode="complaints">
+
+  <!-- Mobile-only: mode-specific report buttons (pinned at top on mobile) -->
+  <div class="mobile-report-bar">
+    <button class="btn btn-report-toggle mobile-report-btn mobile-report-complaints" onclick="openReportModal()">Report a Dog</button>
+    <button class="btn btn-report-toggle mobile-report-btn mobile-report-animals" onclick="openAnimalReportModal()">Report an Animal</button>
+  </div>
+
+  <!-- Data mode selector (above filters, always visible on mobile) -->
+  <div class="data-mode-bar">
+    <div class="control-group">
+      <label for="data-mode-select">View</label>
+      <select id="data-mode-select" onchange="onDataModeChange(this.value)">
+        <option value="dogruns" selected>📍 Find a Dog Run</option>
+        <option value="complaints">🐕 Offleashed Dog Reports</option>
+        <option value="animals">🐾 Sick/Injured Animal Reports</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Mobile compact bar: Filters toggle only (hidden on desktop/tablet) -->
+  <div class="mobile-bar">
+    <button class="filter-toggle-btn" id="filter-toggle-btn" onclick="toggleFilters()">
+      <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M1 3h13M3 7.5h9M5.5 12h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      Filters
+      <span class="filter-active-dot" id="filter-active-dot"></span>
+    </button>
+  </div>
+
+  <!-- Filter panel (always visible on desktop, collapsible on mobile) -->
+  <div class="filter-panel" id="filter-panel">
+    <div class="filter-panel-inner">
+      <div class="control-group">
+        <label for="borough-filter">Borough</label>
+        <select id="borough-filter" onchange="onBoroughFilterChange()">
+          <option value="">All boroughs</option>
+          <option value="MANHATTAN">Manhattan</option>
+          <option value="BROOKLYN">Brooklyn</option>
+          <option value="QUEENS">Queens</option>
+          <option value="BRONX">Bronx</option>
+          <option value="STATEN ISLAND">Staten Island</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label for="park-filter">Location</label>
+        <select id="park-filter" onchange="onParkFilterChange()">
+          <option value="">All locations</option>
+          <option value="__park__">Parks</option>
+          <option value="__street__">Street / Sidewalk</option>
+        </select>
+      </div>
+      <div class="control-group control-group-park">
+        <label for="park-name-filter">Park Name</label>
+        <select id="park-name-filter" onchange="fetchParkBoundary(this.value); updateFilterDot()">
+          <option value="">All named parks</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label for="limit-select">Show</label>
+        <select id="limit-select" onchange="updateFilterDot()">
+          <option value="50">50 most recent</option>
+          <option value="100" selected>100 most recent</option>
+          <option value="250">250 most recent</option>
+          <option value="500">500 most recent</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" id="load-btn" onclick="loadComplaints()">Load Complaints</button>
+      <button class="btn btn-report-toggle desktop-report-btn" id="report-btn" onclick="openReportModal()">Report a Dog</button>
+    </div>
+  </div>
+
+  <!-- Animal Incidents filter panel (shown in Animals mode) -->
+  <div class="filter-panel" id="animal-filter-panel">
+    <div class="filter-panel-inner">
+      <div class="control-group">
+        <label for="animal-borough-filter">Borough</label>
+        <select id="animal-borough-filter">
+          <option value="">All boroughs</option>
+          <option value="Manhattan">Manhattan</option>
+          <option value="Brooklyn">Brooklyn</option>
+          <option value="Queens">Queens</option>
+          <option value="Bronx">Bronx</option>
+          <option value="Staten Island">Staten Island</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label for="animal-condition-filter">Condition</label>
+        <select id="animal-condition-filter">
+          <option value="">All conditions</option>
+          <option value="sick">Sick or Injured</option>
+          <option value="Injured">Injured</option>
+          <option value="Unhealthy">Unhealthy</option>
+          <option value="DOA">DOA</option>
+          <option value="Healthy">Healthy</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label for="animal-class-filter">Species</label>
+        <select id="animal-class-filter">
+          <option value="">All species</option>
+          <option value="Birds">Birds</option>
+          <option value="Raptors">Raptors</option>
+          <option value="Small Mammals-RVS">Small Mammals (RVS)</option>
+          <option value="Small Mammals-non RVS">Small Mammals (non-RVS)</option>
+          <option value="Domestic">Domestic Animals</option>
+          <option value="Terrestrial Reptile or Amphibian">Reptiles &amp; Amphibians</option>
+          <option value="Deer">Deer</option>
+          <option value="Coyotes">Coyotes</option>
+          <option value="Marine Mammals-seals only">Seals</option>
+          <option value="Marine Mammals-whales, Dolphin">Whales &amp; Dolphins</option>
+          <option value="Marine Reptiles">Marine Reptiles</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label for="animal-limit-select">Show</label>
+        <select id="animal-limit-select">
+          <option value="50">50 most recent</option>
+          <option value="100" selected>100 most recent</option>
+          <option value="250">250 most recent</option>
+          <option value="500">500 most recent</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" id="animal-load-btn" onclick="loadAnimalIncidents()">Load Incidents</button>
+      <button class="btn btn-report-toggle desktop-report-btn" onclick="openAnimalReportModal()">Report an Animal</button>
+    </div>
+  </div>
+
+  <!-- Dog Runs filter panel (shown in Dog Runs mode) -->
+  <div class="filter-panel" id="dogrun-filter-panel">
+    <div class="filter-panel-inner">
+      <div class="control-group">
+        <label for="dogrun-borough-filter">Borough</label>
+        <select id="dogrun-borough-filter" onchange="filterDogRuns()">
+          <option value="">All boroughs</option>
+          <option value="M">Manhattan</option>
+          <option value="B">Brooklyn</option>
+          <option value="Q">Queens</option>
+          <option value="X">Bronx</option>
+          <option value="R">Staten Island</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label for="dogrun-zip-filter">Zip Code</label>
+        <div class="ac-wrap">
+          <input type="text" id="dogrun-zip-filter" placeholder="e.g. 10001"
+                 autocomplete="off" class="zip-autocomplete-input">
+          <ul class="ac-list" id="dogrun-zip-list"></ul>
+        </div>
+      </div>
+      <div class="control-group">
+        <label for="dogrun-surface-filter">Surface</label>
+        <select id="dogrun-surface-filter" onchange="filterDogRuns()">
+          <option value="">All surfaces</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label for="dogrun-seating-filter">Seating</label>
+        <select id="dogrun-seating-filter" onchange="filterDogRuns()">
+          <option value="">Any</option>
+          <option value="Yes">Has seating</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div id="active-filters" class="active-filters" style="display:none"></div>
+
+<div id="view-tabs" class="view-tabs">
+  <button class="view-tab active" id="tab-map" onclick="switchView('map')">Map</button>
+  <button class="view-tab" id="tab-list" onclick="switchView('list')">List <span class="tab-count" id="tab-list-count"></span></button>
+</div>
+
+<main>
+  <div id="map-container">
+    <div id="map"></div>
+    <button id="report-mode-btn" class="map-report-btn" onclick="clickReportHere()" title="Report a dog or animal">
+      Report a Dog
+    </button>
+  </div>
+  <div id="list-panel">
+    <div class="panel-header">
+      <span class="panel-title">Find a Dog Run</span>
+      <span class="count-badge" id="list-count">—</span>
+    </div>
+    <div id="complaint-list">
+      <div class="state-box">
+        <div class="state-icon">📍</div>
+        <div class="state-title">Loading dog runs…</div>
+        <div class="state-msg">Fetching NYC dog run locations.</div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  Data from <a href="https://data.cityofnewyork.us/Social-Services/311-Service-Requests-from-2010-to-Present/erm2-nwe9" target="_blank" rel="noopener">NYC 311 Service Requests</a> via NYC Open Data. Map by <a href="https://openfreemap.org" target="_blank" rel="noopener">OpenFreeMap</a> &amp; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>.
+</footer>
+
+<!-- Report modal -->
+<div id="report-modal" class="modal-overlay" onclick="handleModalOverlayClick(event)">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2 class="modal-title">Report an Off-Leash Dog</h2>
+      <button class="modal-close" onclick="closeReportModal()">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="report-emergency">
+        <div class="report-emergency-icon">🚨</div>
+        <div class="report-emergency-text">
+          <strong>Is a dog currently threatening or injuring someone?</strong>
+          <a href="tel:911" class="btn-emergency">Call 911 immediately</a>
+        </div>
+      </div>
+
+      <div class="report-section-label">Where is the dog?</div>
+
+      <div class="report-options">
+        <div class="report-option">
+          <div class="report-option-header">
+            <span class="report-option-icon">🌳</span>
+            <span class="report-option-title">In a Park</span>
+          </div>
+          <p class="report-option-desc">Dogs must be leashed in NYC parks except in designated off-leash areas (before 9 AM and after 9 PM in unfenced areas, or in dog runs).</p>
+          <div class="report-links">
+            <a href="https://portal.311.nyc.gov/servicerequest-create/?caid=781ebd97-bc86-e811-a960-000d3a35f53a&kasid=616adb35-766e-ed11-9562-002248243cd0" target="_blank" rel="noopener" class="btn-link btn-link-primary">Report via 311 Online</a>
+            <a href="tel:311" class="btn-link">Call 311</a>
+          </div>
+        </div>
+
+        <div class="report-option">
+          <div class="report-option-header">
+            <span class="report-option-icon">🏙️</span>
+            <span class="report-option-title">Sidewalk or Public Place</span>
+          </div>
+          <p class="report-option-desc">Have ready: the dog owner's name, address, and apartment number, plus the times they typically let the dog off-leash.</p>
+          <div class="report-links">
+            <a href="https://portal.311.nyc.gov/sr-step/?id=5ca2f0ac-a028-f111-9730-7c1e52a542e8&stepid=4a51f5a5-b04c-e811-a835-000d3a33b1e4" target="_blank" rel="noopener" class="btn-link btn-link-primary">Report via 311 Online</a>
+            <a href="tel:311" class="btn-link">Call 311</a>
+          </div>
+        </div>
+
+        <div class="report-option">
+          <div class="report-option-header">
+            <span class="report-option-icon">🏢</span>
+            <span class="report-option-title">NYCHA Housing</span>
+          </div>
+          <p class="report-option-desc">Contact the NYCHA Customer Contact Center directly. Available in Mandarin, Russian, and Spanish.</p>
+          <div class="report-links">
+            <a href="tel:7187077771" class="btn-link btn-link-primary">Call (718) 707-7771</a>
+            <span class="report-note">24 hours, 7 days a week</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="report-app-row">
+        <div class="report-app-text">
+          <strong>NYC311 App</strong> — report on the go from your phone.
+        </div>
+        <div class="report-app-links">
+          <a href="https://apps.apple.com/us/app/nyc311/id664608075" target="_blank" rel="noopener" class="btn-link">iOS</a>
+          <a href="https://play.google.com/store/apps/details?id=gov.nyc.doitt.nyc311" target="_blank" rel="noopener" class="btn-link">Android</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Park report modal -->
+<div id="park-report-modal" class="modal-overlay" onclick="handleParkModalOverlayClick(event)">
+  <div class="modal-box modal-box-sm">
+    <div class="modal-header">
+      <div>
+        <h2 class="modal-title">Report Off-Leash Dog</h2>
+        <div class="modal-park-name" id="park-report-name"></div>
+      </div>
+      <button class="modal-close" onclick="closeParkReportModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="report-section-label">Report an offleashed dog to NYC 311</div>
+      <div class="report-links" style="flex-direction:column;gap:.5rem;">
+        <a href="https://portal.311.nyc.gov/servicerequest-create/?caid=781ebd97-bc86-e811-a960-000d3a35f53a&kasid=616adb35-766e-ed11-9562-002248243cd0"
+           target="_blank" rel="noopener"
+           class="btn-link btn-link-primary" style="text-align:center;padding:.5rem 1rem;">
+          Report via 311 Online
+        </a>
+        <a href="tel:311" class="btn-link" style="text-align:center;">Call 311</a>
+      </div>
+      <p style="font-size:.74rem;color:var(--text-secondary);line-height:1.5;margin:.5rem 0 0;">
+        Dogs must be leashed in NYC parks except in designated off-leash areas (before 9 AM and after 9 PM in unfenced areas, or in dog runs).
+      </p>
+      <hr style="border:none;border-top:1px solid var(--border);margin:.25rem 0;">
+      <div class="report-emergency">
+        <div class="report-emergency-icon">🚨</div>
+        <div class="report-emergency-text">
+          <strong>Is a dog currently threatening or injuring someone?</strong>
+          <a href="tel:911" class="btn-emergency">Call 911 immediately</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Animal report modal -->
+<div id="animal-report-modal" class="modal-overlay" onclick="handleAnimalModalOverlayClick(event)">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2 class="modal-title">Report a Sick or Injured Animal</h2>
+      <button class="modal-close" onclick="closeAnimalReportModal()">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="report-emergency">
+        <div class="report-emergency-icon">🚨</div>
+        <div class="report-emergency-text">
+          <strong>Is the animal dangerous, vicious, or potentially rabid?</strong>
+          <a href="tel:911" class="btn-emergency">Call 911 immediately</a>
+        </div>
+      </div>
+
+      <div class="report-section-label">What type of animal?</div>
+
+      <div class="report-options">
+        <div class="report-option">
+          <div class="report-option-header">
+            <span class="report-option-icon">🌳</span>
+            <span class="report-option-title">Animals in Parks</span>
+          </div>
+          <p class="report-option-desc">NYC Parks Rangers respond to sick or injured wildlife and strays found in parks. They do not respond to healthy pigeons or squirrels.</p>
+          <div class="report-links">
+            <a href="https://portal.311.nyc.gov/servicerequest-create/What?caid=f355a646-c3de-e811-a972-000d3a1c5096" target="_blank" rel="noopener" class="btn-link btn-link-primary">Report via 311 Online</a>
+            <a href="tel:311" class="btn-link">Call 311</a>
+          </div>
+          <p class="report-option-desc" style="margin-top:.5rem;">ACC accepts drop-offs (not pickups) for injured common wildlife — squirrels, pigeons, robins, small animals. For a licensed rehabilitator, contact the NYS Dept. of Environmental Conservation.</p>
+          <div class="report-links" style="margin-top:.25rem;">
+            <a href="tel:2127884000" class="btn-link btn-link-primary">Call ACC: (212) 788-4000</a>
+          </div>
+        </div>
+
+        <div class="report-option">
+          <div class="report-option-header">
+            <span class="report-option-icon">🦅</span>
+            <span class="report-option-title">Wild Birds</span>
+          </div>
+          <div class="report-emergency" style="margin-bottom:.6rem;">
+            <div class="report-emergency-icon">🦠</div>
+            <div class="report-emergency-text">
+              <strong>Bird Flu (H5N1): Do not handle sick or dead waterbirds, raptors, or corvids (crows/ravens). Wear gloves and a mask if handling any sick bird.</strong>
+              <a href="https://nycbirdalliance.org/bird-flu" target="_blank" rel="noopener" class="btn-emergency" style="background:#b91c1c;">NYC Bird Alliance: Bird Flu Info ↗</a>
+              <span style="font-size:.8rem;color:#991b1b;">For dead wild birds outside of parks: Report online to <a href="https://survey123.arcgis.com/share/dee381c0ee8a4114a83dc1892fc0f7ed" target="_blank" rel="noopener" style="color:#991b1b;font-weight:600;">NYS Department of Environmental Conservation</a>.</span>
+            </div>
+          </div>
+          <p class="report-option-desc"><strong>Wild Bird Fund</strong> — NYC's wildlife rehabilitation center for injured and orphaned birds and urban wildlife. Located at 565 Columbus Ave (87th–88th St), Manhattan. Do not feed or give water before transport.</p>
+          <div class="report-links" style="margin-top:.25rem;">
+            <a href="https://www.wildbirdfund.org/how-to-help/rescue/" target="_blank" rel="noopener" class="btn-link btn-link-primary">WBF Rescue Info ↗</a>
+            <a href="tel:6463062862" class="btn-link">646-306-2862</a>
+          </div>
+        </div>
+
+        <div class="report-option">
+          <div class="report-option-header">
+            <span class="report-option-icon">🐕</span>
+            <span class="report-option-title">Stray Dogs &amp; Cats</span>
+          </div>
+          <p class="report-option-desc">Contact Animal Care Centers of NYC (ACC). Call before arriving with a stray animal. ACC does not handle healthy strays or nursing mother cats.</p>
+          <div class="report-links">
+            <a href="tel:2127884000" class="btn-link btn-link-primary">Call ACC: (212) 788-4000</a>
+            <a href="tel:311" class="btn-link">Call 311</a>
+          </div>
+          <p class="report-option-desc" style="margin-top:.4rem;">For community cats: <a href="mailto:CommunityCats@nycacc.org" style="color:var(--green);">CommunityCats@nycacc.org</a></p>
+        </div>
+
+        <div class="report-option">
+          <div class="report-option-header">
+            <span class="report-option-icon">🌊</span>
+            <span class="report-option-title">Marine Animals</span>
+          </div>
+          <p class="report-option-desc">Report beached or stranded seals, turtles, or whales via 311. Available 10 AM–6 PM (excluding holidays).</p>
+          <div class="report-links">
+            <a href="tel:311" class="btn-link btn-link-primary">Call 311</a>
+            <a href="tel:2126399675" class="btn-link">212-639-9675</a>
+          </div>
+        </div>
+      </div>
+
+
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"
+        integrity="sha384-SYKAG6cglRMN0RVvhNeBY0r3FYKNOJtznwA0v7B5Vp9tr31xAHsZC0DqkQ/pZDmj" crossorigin="anonymous"></script>
+<script src="scripts/app.js"></script>
+</body>
+</html>
