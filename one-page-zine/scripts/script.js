@@ -92,9 +92,8 @@ function removeImage(index) {
   if (img) img.remove();
   slot.classList.remove('filled');
 
-  // Re-enable file input
+  // Reset file input so the same file can be re-selected
   const input = slot.querySelector('input[type="file"]');
-  input.style.display = '';
   input.value = '';
 
   updateUI();
