@@ -27,7 +27,7 @@ Live site: _coming soon_
 
 ### Reporting Resources
 
-The **Report a Dog** / **Report an Animal** button opens a guide with:
+The **Report a Dog** / **Report an Animal** button is always visible on the map and opens a guide with:
 
 - **Off-leash dogs**: 311 Online form links, Call 311, NYC311 app (iOS/Android), location-specific guidance (parks, sidewalks, NYCHA housing)
 - **Animals in parks**: NYC Parks Rangers contact, 311 reporting form, ACC drop-off info
@@ -37,16 +37,17 @@ The **Report a Dog** / **Report an Animal** button opens a guide with:
 
 ### Mobile Responsive
 
+- Branded loading screen while resources load
 - Switches between Map and List tabs on small screens
-- Full-screen slide-in report modal
-- Collapsible filter panels
-- Touch-friendly controls
+- Full-screen slide-in report modal (swipe-style)
+- Compact filter panels with smaller controls
+- Touch-friendly dropdowns and buttons
 
 ---
 
 ## Data Sources & APIs
 
-All data is fetched from the [NYC Open Data](https://opendata.cityofnewyork.us/) portal using their public Socrata API. No API key is required.
+Data comes from the [NYC Open Data](https://opendata.cityofnewyork.us/) portal using their public Socrata API. No API key is required.
 
 | Dataset | ID | API Endpoint | Description |
 |---------|----|--------------|-------------|
@@ -59,9 +60,9 @@ All data is fetched from the [NYC Open Data](https://opendata.cityofnewyork.us/)
 
 ### How Data Is Used
 
-- **311 complaints** are plotted by their latitude/longitude coordinates. Open complaints appear as gold dots, closed as darker dots.
-- **Dog runs** are rendered as teal polygon fills and centroid dots from the GeoJSON geometry.
-- **Animal incidents** do not have coordinates in the source data. The app matches the `property` (park name) field against park boundary centroids to place them on the map. Incidents are grouped by park, with dot sizes proportional to the count.
+- **Dog runs** are bundled locally for fast loading and rendered as teal polygon fills and centroid dots.
+- **311 complaints** are fetched on-demand when switching to Offleashed Dog Reports mode. Open complaints appear as gold dots, closed as darker dots.
+- **Animal incidents** are fetched on-demand when switching to Sick/Injured Animal Reports mode. The app matches the `property` (park name) field against park boundary centroids to place them on the map, since the source data has no coordinates. Incidents are grouped by park, with dot sizes proportional to the count.
 - **Park boundaries** are loaded as a clickable background layer. Selecting a park highlights its outline and filters active data to that location.
 
 ---
@@ -70,7 +71,10 @@ All data is fetched from the [NYC Open Data](https://opendata.cityofnewyork.us/)
 
 | File | Description |
 |------|-------------|
-| `data/boroughs.geojson` | NYC borough boundary polygons for the faint map overlay |
+| `data/dogruns.geojson` | Pre-cached dog run locations (68KB, optimized from API) |
+| `data/boroughs.geojson` | NYC borough boundary polygons (250KB, simplified) |
+
+Both files are optimized with reduced coordinate precision and stripped unused properties to minimize load times.
 
 ---
 
@@ -80,9 +84,11 @@ All data is fetched from the [NYC Open Data](https://opendata.cityofnewyork.us/)
 |------------|---------|
 | [MapLibre GL JS](https://maplibre.org/) v4.7.1 | Interactive WebGL map rendering |
 | [OpenFreeMap](https://openfreemap.org/) | Free map tile style (Liberty) |
-| [Inter](https://rsms.me/inter/) (Google Fonts) | UI typeface |
+| System fonts | UI typeface (San Francisco on iOS, Segoe UI on Windows, Roboto on Android) |
 | Vanilla JavaScript | No frameworks — single `app.js` file |
 | CSS3 | Responsive layout with CSS Grid, Flexbox, and custom properties |
+
+CDN: [jsDelivr](https://www.jsdelivr.com/) with Subresource Integrity (SRI) hashes for MapLibre.
 
 ---
 
@@ -90,12 +96,13 @@ All data is fetched from the [NYC Open Data](https://opendata.cityofnewyork.us/)
 
 ```
 NYCoffleash/
-├── index.html          Main HTML (single page app)
+├── index.html            Main HTML (single page app)
 ├── scripts/
-│   └── app.js          Application logic (~1,600 lines)
+│   └── app.js            Application logic (~1,650 lines)
 ├── styles/
-│   └── style.css       All styling (~870 lines)
+│   └── style.css         All styling (~880 lines)
 ├── data/
+│   ├── dogruns.geojson   Pre-cached dog run locations
 │   └── boroughs.geojson  NYC borough boundaries
 ├── .gitignore
 └── README.md
@@ -122,6 +129,33 @@ Then open `http://localhost:3456` in your browser.
 
 ---
 
+## Performance
+
+The app is optimized for fast loading on mobile:
+
+- **Branded loading screen** — inline CSS renders immediately, no flash of unstyled content
+- **Local data files** — dog runs and borough boundaries are bundled locally (no API calls on boot)
+- **Deferred loading** — parks layer, park list, and API data load only when needed
+- **Compressed GeoJSON** — reduced coordinate precision and stripped unused properties
+- **System fonts** — no external font downloads
+- **Deferred scripts** — HTML parses while JS downloads in parallel
+- **jsDelivr CDN** — fast HTTP/2 delivery with SRI integrity hashes
+- **Preconnect hints** — early DNS/TLS handshakes for external domains
+- **localStorage caching** — dog runs cached for 7 days, park lists for 24 hours
+- **Error recovery** — reload banner if map or data fails to load
+
+---
+
+## Security
+
+- **HTML escaping** — all API data is sanitized via `escHTML()` / `safeText()` before insertion into the DOM
+- **Subresource Integrity** — SRI hashes on CDN-loaded scripts and stylesheets
+- **No API keys** — all data sources are public, unauthenticated endpoints
+- **External links** — all use `target="_blank" rel="noopener"`
+- **No sensitive data** — `.gitignore` excludes `.env`, `.claude/`, and `node_modules/`
+
+---
+
 ## Caching
 
 To reduce API calls and improve load times, the app caches data in the browser:
@@ -130,6 +164,7 @@ To reduce API calls and improve load times, the app caches data in the browser:
 |------|---------|-----|
 | Park list (per borough) | localStorage | 24 hours |
 | Dog runs | localStorage | 7 days |
+| All parks | sessionStorage | Session only |
 | Park boundaries (individual) | In-memory (Map) | Session only |
 
 Cache is automatically refreshed when the TTL expires. Clearing your browser storage will reset all caches.
