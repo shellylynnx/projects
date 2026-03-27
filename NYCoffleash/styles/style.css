@@ -160,6 +160,27 @@ main {
 .map-loading .maplibregl-ctrl-attrib .maplibregl-ctrl-attrib-inner { display: none !important; }
 .map-loading .maplibregl-ctrl-attrib.maplibregl-compact::after { display: block; }
 
+/* Map loading bar — thin animated bar at top of map */
+.map-loading-bar {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  z-index: 10;
+  background: rgba(0,0,0,.08);
+  overflow: hidden;
+}
+.map-loading-bar-inner {
+  height: 100%;
+  width: 35%;
+  background: var(--orange);
+  border-radius: 0 2px 2px 0;
+  animation: loadbar 1.2s ease-in-out infinite;
+}
+@keyframes loadbar {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(400%); }
+}
+
 /* MapLibre popup overrides */
 .maplibregl-popup-content {
   font-family: 'Inter', sans-serif;

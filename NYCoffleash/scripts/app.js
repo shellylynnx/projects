@@ -486,7 +486,8 @@ async function loadComplaints() {
   if (panel) { panel.classList.remove('open'); filterBtn?.classList.remove('open'); }
 
   updateActiveFilterBar(borough, park, parkName, limit);
-  showLoading();
+  showLoading('Loading offleashed dog reports…');
+  showMapLoading();
   if (activePopup) { activePopup.remove(); activePopup = null; }
 
   let where = `(descriptor='Dog Off Leash' OR descriptor='Unleashed Dog in Public')`;
@@ -518,6 +519,7 @@ async function loadComplaints() {
   } finally {
     btn.textContent = 'Load Complaints';
     btn.disabled = false;
+    hideMapLoading();
   }
 }
 
@@ -680,11 +682,22 @@ function updateStats(data) {
 }
 
 // ── State helpers ────────────────────────────────────────────────
-function showLoading() {
+function showMapLoading() {
+  const bar = document.getElementById('map-loading-bar');
+  if (bar) bar.style.display = '';
+}
+function hideMapLoading() {
+  const bar = document.getElementById('map-loading-bar');
+  if (bar) bar.style.display = 'none';
+}
+
+function showLoading(msg) {
+  const label = msg || (currentMode === 'animals' ? 'Loading animal incidents…'
+    : currentMode === 'dogruns' ? 'Loading dog runs…' : 'Loading complaints…');
   document.getElementById('complaint-list').innerHTML = `
     <div class="state-box">
       <div class="spinner"></div>
-      <div class="state-title">Fetching data…</div>
+      <div class="state-title">${label}</div>
     </div>`;
   document.getElementById('list-count').textContent = '—';
   document.getElementById('stats').innerHTML = '';
@@ -804,6 +817,7 @@ async function loadAllParks() {
 
 async function loadDogRuns() {
   const CACHE_KEY = 'nycoffleash_dog_runs_v2';
+  showMapLoading();
   try {
     // 1. Try localStorage cache first (instant)
     const raw = localStorage.getItem(CACHE_KEY);
@@ -811,6 +825,7 @@ async function loadDogRuns() {
       const { data, ts } = JSON.parse(raw);
       if (Date.now() - ts < CACHE_TTL_DOG_RUNS) {
         applyDogRunsData(data);
+        hideMapLoading();
         return;
       }
     }
@@ -829,6 +844,8 @@ async function loadDogRuns() {
     } catch (_) {
       showLoadError();
     }
+  } finally {
+    hideMapLoading();
   }
 }
 
@@ -1130,12 +1147,18 @@ function onDataModeChange(mode) {
 
   if (isComplaints) {
     ensureParkList();
+    showLoading('Loading offleashed dog reports…');
     loadComplaints();
   } else if (isDogRuns) {
     renderDogRunList();
   } else if (isAnimals) {
-    if (!animalData.length) loadAnimalIncidents();
-    else { renderAnimalList(animalData); updateAnimalStats(animalData); }
+    if (!animalData.length) {
+      showLoading('Loading animal incidents…');
+      loadAnimalIncidents();
+    } else {
+      renderAnimalList(animalData);
+      updateAnimalStats(animalData);
+    }
   }
 
   if (activePopup) { activePopup.remove(); activePopup = null; }
@@ -1461,7 +1484,8 @@ async function loadAnimalIncidents() {
   const panel = document.getElementById('animal-filter-panel');
   if (panel) { panel.classList.remove('open'); document.getElementById('filter-toggle-btn')?.classList.remove('open'); }
 
-  showLoading();
+  showLoading('Loading animal incidents…');
+  showMapLoading();
   if (activePopup) { activePopup.remove(); activePopup = null; }
 
   const conditions = [];
@@ -1491,6 +1515,7 @@ async function loadAnimalIncidents() {
   } finally {
     btn.textContent = 'Load Incidents';
     btn.disabled = false;
+    hideMapLoading();
   }
 }
 
@@ -1647,6 +1672,11 @@ function dismissLoadingScreen() {
 }
 // Fallback: dismiss after 8s even if data hasn't loaded
 setTimeout(dismissLoadingScreen, 8000);
+
+// ── Service Worker ────────────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').catch(() => {});
+}
 
 // ── Boot ─────────────────────────────────────────────────────────
 initMap();
