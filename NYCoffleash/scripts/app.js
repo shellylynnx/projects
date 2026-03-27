@@ -803,8 +803,9 @@ async function loadAllParks() {
 }
 
 async function loadDogRuns() {
-  const CACHE_KEY = 'nycoffleash_dog_runs_v2'; // v2 = includes inactive
+  const CACHE_KEY = 'nycoffleash_dog_runs_v2';
   try {
+    // 1. Try localStorage cache first (instant)
     const raw = localStorage.getItem(CACHE_KEY);
     if (raw) {
       const { data, ts } = JSON.parse(raw);
@@ -813,12 +814,21 @@ async function loadDogRuns() {
         return;
       }
     }
-    const res  = await fetch(`${DOG_RUNS_API}?$limit=200`);
+    // 2. Load from local bundled file (fast, no API round-trip)
+    const res  = await fetch('data/dogruns.geojson');
     const data = await res.json();
     applyDogRunsData(data);
     try { localStorage.setItem(CACHE_KEY, JSON.stringify({ data, ts: Date.now() })); } catch (_) {}
   } catch (e) {
-    showLoadError();
+    // 3. Fallback to API if local file fails
+    try {
+      const res  = await fetch(`${DOG_RUNS_API}?$limit=200`);
+      const data = await res.json();
+      applyDogRunsData(data);
+      try { localStorage.setItem(CACHE_KEY, JSON.stringify({ data, ts: Date.now() })); } catch (_) {}
+    } catch (_) {
+      showLoadError();
+    }
   }
 }
 
