@@ -3,6 +3,10 @@ const $ = id => document.getElementById(id);
 /* ── Index check on load ──────────────────────────────────────── */
 window.addEventListener('DOMContentLoaded', () => {
   if (window.BIRD_OBJECTS && window.BIRD_OBJECTS.length) {
+    // Build ID→object Map for O(1) lookups
+    _birdObjectMap = new Map();
+    for (const o of window.BIRD_OBJECTS) _birdObjectMap.set(o.id, o);
+
     const count = window.BIRD_OBJECTS.length.toLocaleString();
     $('initial-title').textContent = 'Search for bird art';
     $('initial-msg').textContent   = `Type a bird name above and click Search. ${count} bird objects indexed.`;
@@ -19,10 +23,83 @@ window.addEventListener('DOMContentLoaded', () => {
       `<code>node build-bird-ids.mjs</code><br><br>` +
       `This scans the MET collection for bird artwork and saves the results.`;
   }
+
+  // ── Global event delegation ──────────────────────────────────
+  $('search-btn').addEventListener('click', () => searchArt());
+
+  $('detail-back-btn').addEventListener('click', () => closeDetail());
+
+  // Lightbox
+  $('lightbox').addEventListener('click', e => {
+    if (e.target.id === 'lightbox-img') return; // don't close when clicking image
+    closeLightbox();
+  });
+  $('lb-close').addEventListener('click', () => closeLightbox());
+
+  // Art grid: card clicks
+  $('art-grid').addEventListener('click', e => {
+    const card = e.target.closest('.art-card');
+    if (!card) return;
+    const id = card.dataset.artworkId;
+    if (id) selectArtwork(+id);
+  });
+
+  // Detail panel: lightbox open + series links
+  $('detail-content').addEventListener('click', e => {
+    const imgWrap = e.target.closest('[data-lightbox-src]');
+    if (imgWrap) {
+      openLightbox(imgWrap.dataset.lightboxSrc, imgWrap.dataset.lightboxAlt);
+      return;
+    }
+    const suggLink = e.target.closest('[data-suggestion]');
+    if (suggLink) {
+      e.preventDefault();
+      $('met-q').value = suggLink.dataset.suggestion;
+      searchArt();
+      return;
+    }
+  });
+
+  // Pagination clicks
+  $('pagination').addEventListener('click', e => {
+    const btn = e.target.closest('[data-page]');
+    if (btn && !btn.disabled) goToPage(+btn.dataset.page);
+  });
+
+  // Suggestion links in no-results
+  $('art-grid').addEventListener('click', e => {
+    const suggLink = e.target.closest('[data-suggestion]');
+    if (suggLink) {
+      e.preventDefault();
+      $('met-q').value = suggLink.dataset.suggestion;
+      searchArt();
+    }
+  });
+
+  // Image error handling via delegation
+  document.addEventListener('error', e => {
+    if (e.target.tagName !== 'IMG') return;
+    const img = e.target;
+    // Card thumbnail error
+    if (img.classList.contains('art-thumb')) {
+      img.style.display = 'none';
+      const ph = img.nextElementSibling;
+      if (ph) ph.style.display = 'flex';
+      return;
+    }
+    // Detail image error
+    const wrap = img.closest('.detail-img-wrap');
+    if (wrap) {
+      img.style.display = 'none';
+      wrap.classList.add('detail-img-placeholder');
+      wrap.innerHTML = '<div class="art-thumb-ph" style="display:flex;aspect-ratio:auto;min-height:200px;font-size:3rem">🖼</div>';
+    }
+  }, true); // capture phase to catch img errors
 });
 
 /* ── Taxonomy matching ────────────────────────────────────────── */
 let _taxonRegexes = [];
+let _birdObjectMap = new Map(); // id → BIRD_OBJECTS entry, built in DOMContentLoaded
 
 function initTaxonomy() {
   if (!window.BIRD_TAXONOMY) return;
@@ -36,7 +113,6 @@ function initTaxonomy() {
     // Use matchName for aliases (historical names), comName for current names
     const name = t.matchName || t.comName;
     // Use plural-aware regex on the last word of the name
-    // e.g. "Downy Woodpecker" matches "Downy Woodpeckers" too
     const words = name.split(/\s+/);
     const lastWord = words[words.length - 1];
     const prefix = words.slice(0, -1).map(w => _escRx(w)).join('\\s+');
@@ -75,9 +151,10 @@ function findTaxonomy(title) {
   return deduped.map(m => m.data);
 }
 
-/* ── Shared plural-form builder ──────────────────────────────── */
+/* ── Shared plural-form builder (memoized) ────────────────────── */
 const _irregulars = { 'goose':'geese', 'geese':'goose' };
 const _escRx = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const _pluralRegexCache = new Map();
 
 function buildPluralForms(word) {
   const w = word.toLowerCase();
@@ -97,9 +174,13 @@ function buildPluralForms(word) {
 }
 
 function buildPluralRegex(word) {
+  const key = word.toLowerCase();
+  if (_pluralRegexCache.has(key)) return _pluralRegexCache.get(key);
   const forms = buildPluralForms(word);
   const pattern = [...forms].map(f => `(?<![a-z])${_escRx(f)}(?![a-z])`).join('|');
-  return new RegExp(pattern, 'i');
+  const regex = new RegExp(pattern, 'i');
+  _pluralRegexCache.set(key, regex);
+  return regex;
 }
 
 /* ── Search ───────────────────────────────────────────────────── */
@@ -131,7 +212,7 @@ async function searchArt() {
   if (!_allMatches.length) {
     const picks = getRandomSuggestions(3);
     const picksHtml = picks.map(s =>
-      `<a href="#" class="suggestion-link" onclick="event.preventDefault();document.getElementById('met-q').value='${esc(s.name)}';searchArt()">${esc(s.name)}</a> <span class="suggestion-count">(${s.count})</span>`
+      `<a href="#" class="suggestion-link" data-suggestion="${esc(s.name)}">${esc(s.name)}</a> <span class="suggestion-count">(${s.count})</span>`
     ).join(', ');
     $('art-grid').innerHTML = `
       <div class="state-box">
@@ -268,7 +349,7 @@ function renderPagination() {
 
   let html = '';
   // Prev arrow
-  html += `<button class="pg-btn pg-arrow" onclick="goToPage(${_currentPage - 1})" ${_currentPage === 1 ? 'disabled' : ''}>&#8249;</button>`;
+  html += `<button class="pg-btn pg-arrow" data-page="${_currentPage - 1}" ${_currentPage === 1 ? 'disabled' : ''}>&#8249;</button>`;
 
   // Page numbers with ellipsis
   const range = buildPageRange(_currentPage, pages);
@@ -276,12 +357,12 @@ function renderPagination() {
     if (item === '...') {
       html += `<span class="pg-dots">…</span>`;
     } else {
-      html += `<button class="pg-btn${item === _currentPage ? ' active' : ''}" onclick="goToPage(${item})">${item}</button>`;
+      html += `<button class="pg-btn${item === _currentPage ? ' active' : ''}" data-page="${item}">${item}</button>`;
     }
   }
 
   // Next arrow
-  html += `<button class="pg-btn pg-arrow" onclick="goToPage(${_currentPage + 1})" ${_currentPage === pages ? 'disabled' : ''}>&#8250;</button>`;
+  html += `<button class="pg-btn pg-arrow" data-page="${_currentPage + 1}" ${_currentPage === pages ? 'disabled' : ''}>&#8250;</button>`;
 
   pg.innerHTML = html;
 }
@@ -347,6 +428,16 @@ function initAutocomplete() {
   // Close dropdown when clicking outside
   document.addEventListener('click', e => {
     if (!e.target.closest('.ac-wrap')) list.classList.remove('open');
+  });
+
+  // Single delegated click handler for autocomplete items
+  list.addEventListener('click', e => {
+    const li = e.target.closest('.ac-item');
+    if (!li || !list._suggestions) return;
+    const s = list._suggestions[+li.dataset.idx];
+    if (!s) return;
+    list.classList.remove('open');
+    handleSuggestionClick(s, input);
   });
 
   // Build bird name list with match counts from the index
@@ -438,8 +529,6 @@ function initAutocomplete() {
       // Check if comName itself is a birdNames word
       let mergeTarget = (nameSet.has(lowerComName) && counts[lowerComName] !== undefined) ? lowerComName : null;
       // Also check if an alias searchName starts with a birdNames word
-      // (e.g. "Eider Duck" starts with "eider" which is in birdNames)
-      // Only check the first word to avoid merging into generic terms like "duck" or "goose"
       if (!mergeTarget) {
         for (const sn of g.searchNames) {
           const firstWord = sn.toLowerCase().split(/[\s-]+/)[0];
@@ -458,7 +547,6 @@ function initAutocomplete() {
         }
         counts[mergeTarget] = combinedIds.size;
         // Still add the species as a suggestion so it appears in autocomplete
-        // (e.g. "Indian Peafowl" should appear even though count merges into "peacock")
         if (g.ids.size > 0) {
           aliasSuggestions.push({ name: comName, searchNames: g.searchNames, count: g.ids.size, sciName: g.sciName });
         }
@@ -569,103 +657,100 @@ function initAutocomplete() {
       `<li class="ac-item" data-idx="${i}">${esc(s.name)}${s.sciName ? `<span class="ac-sci-name">${esc(s.sciName)}</span>` : ''}<span class="ac-sci">${s.count} results</span></li>`
     ).join('');
     list.classList.add('open');
+  }
+}
 
-    list.querySelectorAll('.ac-item').forEach(li => {
-      li.addEventListener('click', () => {
-        const s = list._suggestions[+li.dataset.idx];
-        list.classList.remove('open');
-        if (s.searchNames) {
-          // Alias entry — search all former/regional names, filter out dominated matches
-          const combined = new Map();
-          for (const sn of s.searchNames) {
-            const regex = buildPluralRegex(sn);
-            for (const o of window.BIRD_OBJECTS) {
-              if (combined.has(o.id)) continue;
-              const m = o.title.match(regex);
-              if (!m) continue;
-              const pos = m.index, end = pos + m[0].length;
-              const dominated = _taxonRegexes.some(tr => {
-                const m2 = o.title.match(tr.regex);
-                return m2 && m2.index <= pos && m2.index + m2[0].length >= end && m2[0].length > m[0].length;
-              });
-              if (!dominated) {
-                const ovr = window.BIRD_TAXONOMY_OVERRIDES?.[o.id];
-                if (ovr && ovr.matchName === sn && ovr.comName !== s.name) continue;
-                combined.set(o.id, o);
-              }
-            }
-          }
-          // Also include artworks matching the current species name (comName)
-          const comRegex = buildPluralRegex(s.name);
-          for (const o of window.BIRD_OBJECTS) {
-            if (!combined.has(o.id) && comRegex.test(o.title)) combined.set(o.id, o);
-          }
-          // Include overridden artworks that map to this species
-          if (window.BIRD_TAXONOMY_OVERRIDES) {
-            for (const [id, ovr] of Object.entries(window.BIRD_TAXONOMY_OVERRIDES)) {
-              if (ovr.comName === s.name) {
-                const obj = window.BIRD_OBJECTS.find(o => o.id === +id);
-                if (obj && !combined.has(obj.id)) combined.set(obj.id, obj);
-              }
-            }
-          }
-          _allMatches = [...combined.values()].sort((a, b) => (b.img || 0) - (a.img || 0));
-          _pageCache = {};
-          window._metObjects = {};
-          showDetailPlaceholder();
-          input.value = s.name;
-          $('series-select').value = '';
-          goToPage(1);
-        } else {
-          // Direct taxonomy name — include aliases and overridden artworks
-          const searchTerm = s.searchName || s.name;
-          const regex = buildPluralRegex(searchTerm);
-          const combined = new Map();
-          for (const o of window.BIRD_OBJECTS) {
-            if (regex.test(o.title)) combined.set(o.id, o);
-          }
-          // Also include artworks matching any alias that resolves to this species (with domination check)
-          if (window.BIRD_TAXONOMY) {
-            for (const t of window.BIRD_TAXONOMY) {
-              if (t.matchName && t.comName === s.name) {
-                const aliasRegex = buildPluralRegex(t.matchName);
-                for (const o of window.BIRD_OBJECTS) {
-                  if (combined.has(o.id)) continue;
-                  const m = o.title.match(aliasRegex);
-                  if (!m) continue;
-                  const pos = m.index, end = pos + m[0].length;
-                  const dominated = _taxonRegexes.some(tr => {
-                    if (tr.data.matchName === t.matchName || tr.data.comName === t.matchName) return false;
-                    const m2 = o.title.match(tr.regex);
-                    return m2 && m2.index <= pos && m2.index + m2[0].length >= end && m2[0].length > m[0].length;
-                  });
-                  if (!dominated) {
-                    const ovr = window.BIRD_TAXONOMY_OVERRIDES?.[o.id];
-                    if (ovr && ovr.matchName === t.matchName && ovr.comName !== s.name) continue;
-                    combined.set(o.id, o);
-                  }
-                }
-              }
-            }
-          }
-          if (window.BIRD_TAXONOMY_OVERRIDES) {
-            for (const [id, ovr] of Object.entries(window.BIRD_TAXONOMY_OVERRIDES)) {
-              if (ovr.comName === s.name) {
-                const obj = window.BIRD_OBJECTS.find(o => o.id === +id);
-                if (obj) combined.set(obj.id, obj);
-              }
-            }
-          }
-          _allMatches = [...combined.values()].sort((a, b) => (b.img || 0) - (a.img || 0));
-          _pageCache = {};
-          window._metObjects = {};
-          showDetailPlaceholder();
-          input.value = s.name;
-          $('series-select').value = '';
-          goToPage(1);
+// Extracted from the old per-item click handler into a shared function
+function handleSuggestionClick(s, input) {
+  if (s.searchNames) {
+    // Alias entry — search all former/regional names, filter out dominated matches
+    const combined = new Map();
+    for (const sn of s.searchNames) {
+      const regex = buildPluralRegex(sn);
+      for (const o of window.BIRD_OBJECTS) {
+        if (combined.has(o.id)) continue;
+        const m = o.title.match(regex);
+        if (!m) continue;
+        const pos = m.index, end = pos + m[0].length;
+        const dominated = _taxonRegexes.some(tr => {
+          const m2 = o.title.match(tr.regex);
+          return m2 && m2.index <= pos && m2.index + m2[0].length >= end && m2[0].length > m[0].length;
+        });
+        if (!dominated) {
+          const ovr = window.BIRD_TAXONOMY_OVERRIDES?.[o.id];
+          if (ovr && ovr.matchName === sn && ovr.comName !== s.name) continue;
+          combined.set(o.id, o);
         }
-      });
-    });
+      }
+    }
+    // Also include artworks matching the current species name (comName)
+    const comRegex = buildPluralRegex(s.name);
+    for (const o of window.BIRD_OBJECTS) {
+      if (!combined.has(o.id) && comRegex.test(o.title)) combined.set(o.id, o);
+    }
+    // Include overridden artworks that map to this species
+    if (window.BIRD_TAXONOMY_OVERRIDES) {
+      for (const [id, ovr] of Object.entries(window.BIRD_TAXONOMY_OVERRIDES)) {
+        if (ovr.comName === s.name) {
+          const obj = _birdObjectMap.get(+id);
+          if (obj && !combined.has(obj.id)) combined.set(obj.id, obj);
+        }
+      }
+    }
+    _allMatches = [...combined.values()].sort((a, b) => (b.img || 0) - (a.img || 0));
+    _pageCache = {};
+    window._metObjects = {};
+    showDetailPlaceholder();
+    input.value = s.name;
+    $('series-select').value = '';
+    goToPage(1);
+  } else {
+    // Direct taxonomy name — include aliases and overridden artworks
+    const searchTerm = s.searchName || s.name;
+    const regex = buildPluralRegex(searchTerm);
+    const combined = new Map();
+    for (const o of window.BIRD_OBJECTS) {
+      if (regex.test(o.title)) combined.set(o.id, o);
+    }
+    // Also include artworks matching any alias that resolves to this species (with domination check)
+    if (window.BIRD_TAXONOMY) {
+      for (const t of window.BIRD_TAXONOMY) {
+        if (t.matchName && t.comName === s.name) {
+          const aliasRegex = buildPluralRegex(t.matchName);
+          for (const o of window.BIRD_OBJECTS) {
+            if (combined.has(o.id)) continue;
+            const m = o.title.match(aliasRegex);
+            if (!m) continue;
+            const pos = m.index, end = pos + m[0].length;
+            const dominated = _taxonRegexes.some(tr => {
+              if (tr.data.matchName === t.matchName || tr.data.comName === t.matchName) return false;
+              const m2 = o.title.match(tr.regex);
+              return m2 && m2.index <= pos && m2.index + m2[0].length >= end && m2[0].length > m[0].length;
+            });
+            if (!dominated) {
+              const ovr = window.BIRD_TAXONOMY_OVERRIDES?.[o.id];
+              if (ovr && ovr.matchName === t.matchName && ovr.comName !== s.name) continue;
+              combined.set(o.id, o);
+            }
+          }
+        }
+      }
+    }
+    if (window.BIRD_TAXONOMY_OVERRIDES) {
+      for (const [id, ovr] of Object.entries(window.BIRD_TAXONOMY_OVERRIDES)) {
+        if (ovr.comName === s.name) {
+          const obj = _birdObjectMap.get(+id);
+          if (obj) combined.set(obj.id, obj);
+        }
+      }
+    }
+    _allMatches = [...combined.values()].sort((a, b) => (b.img || 0) - (a.img || 0));
+    _pageCache = {};
+    window._metObjects = {};
+    showDetailPlaceholder();
+    input.value = s.name;
+    $('series-select').value = '';
+    goToPage(1);
   }
 }
 
@@ -778,10 +863,9 @@ function buildCardHtml(obj) {
   const imgSrc = obj.primaryImageSmall || obj.primaryImage;
   const isFallback = obj._fallback;
   return `
-  <div class="art-card${isFallback ? ' fallback' : ''}" id="card-${obj.objectID}" onclick="selectArtwork(${obj.objectID})">
+  <div class="art-card${isFallback ? ' fallback' : ''}" id="card-${obj.objectID}" data-artwork-id="${obj.objectID}">
     ${imgSrc
-      ? `<img class="art-thumb" src="${esc(imgSrc)}" alt="${esc(obj.title)}" loading="lazy"
-           onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+      ? `<img class="art-thumb" src="${esc(imgSrc)}" alt="${esc(obj.title)}" loading="lazy" />
         <div class="art-thumb-ph" style="display:none">🖼</div>`
       : `<div class="art-thumb-ph" style="display:flex">🖼</div>`}
     <div class="art-info">
@@ -854,9 +938,8 @@ function selectArtwork(id) {
         <div class="art-thumb-ph" style="display:flex;aspect-ratio:auto;min-height:200px;font-size:3rem">🖼</div>
       </div>`;
   const imgHtml = imgSrc
-    ? `<div class="detail-img-wrap" onclick="openLightbox('${esc(fullSrc)}','${esc(obj.title)}')" title="Click for full image">
-        <img src="${esc(imgSrc)}" alt="${esc(obj.title)}"
-             onerror="this.style.display='none';this.parentElement.classList.add('detail-img-placeholder');this.parentElement.innerHTML='<div class=\\'art-thumb-ph\\' style=\\'display:flex;aspect-ratio:auto;min-height:200px;font-size:3rem\\'>🖼</div>'" />
+    ? `<div class="detail-img-wrap" data-lightbox-src="${esc(fullSrc)}" data-lightbox-alt="${esc(obj.title)}" title="Click for full image">
+        <img src="${esc(imgSrc)}" alt="${esc(obj.title)}" />
       </div>`
     : phHtml;
 
