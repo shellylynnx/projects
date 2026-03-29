@@ -85,7 +85,7 @@ Both files are optimized with reduced coordinate precision and stripped unused p
 | [MapLibre GL JS](https://maplibre.org/) v4.7.1 | Interactive WebGL map rendering |
 | [OpenFreeMap](https://openfreemap.org/) | Free map tile style (Liberty) |
 | System fonts | UI typeface (San Francisco on iOS, Segoe UI on Windows, Roboto on Android) |
-| Vanilla JavaScript | No frameworks — single `app.js` file |
+| Vanilla JavaScript | No frameworks — single `app.js` file (~1,760 lines) |
 | CSS3 | Responsive layout with CSS Grid, Flexbox, and custom properties |
 
 CDN: [jsDelivr](https://www.jsdelivr.com/) with Subresource Integrity (SRI) hashes for MapLibre.
@@ -98,12 +98,15 @@ CDN: [jsDelivr](https://www.jsdelivr.com/) with Subresource Integrity (SRI) hash
 NYCoffleash/
 ├── index.html            Main HTML (single page app)
 ├── scripts/
-│   └── app.js            Application logic (~1,650 lines)
+│   └── app.js            Application logic (~1,760 lines)
 ├── styles/
-│   └── style.css         All styling (~880 lines)
+│   └── style.css         All styling (~960 lines)
 ├── data/
 │   ├── dogruns.geojson   Pre-cached dog run locations
 │   └── boroughs.geojson  NYC borough boundaries
+├── sw.js                 Service worker (network-first API, cache-first static)
+├── tests/
+│   └── test.html         Browser-based test suite
 ├── .gitignore
 └── README.md
 ```
@@ -186,6 +189,22 @@ The app links to official NYC resources for reporting:
 - **Marine Animal Hotline**: For beached/stranded seals, turtles, and whales
 
 ---
+
+## Accessibility
+
+- ARIA labels on interactive elements (buttons, filters, map controls)
+- `aria-live="polite"` regions for dynamic content updates (stats bar, list results)
+- `role="alert"` on toast notifications for screen reader announcements
+- Keyboard-navigable autocomplete with arrow key and Enter support
+- Focus management in modals
+
+## Toast Notifications
+
+Non-blocking toast messages for API errors, network failures, and data loading issues. Toasts auto-dismiss after 4–8 seconds and support manual dismissal. Types: `error` (red), `info` (blue), `success` (green). Respects `prefers-reduced-motion`.
+
+## Testing
+
+Open `tests/test.html` in a browser to run the test suite. Tests cover data loading, filter logic, map rendering, and UI interactions.
 
 ## Browser Support
 

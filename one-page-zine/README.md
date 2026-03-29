@@ -38,8 +38,42 @@ Print the downloaded file on a single sheet of 8.5" × 11" paper, then fold and 
 
 ```
 one-page-zine/
-├── index.html   — page structure
-├── style.css    — styles and layout
-├── script.js    — upload logic and canvas rendering
-└── README.md    — this file
+├── index.html               — page structure
+├── scripts/
+│   ├── app.js               — entry point, initializes all modules
+│   ├── grid.js              — grid slot creation, drag-and-drop, slot interactions
+│   ├── files.js             — file validation, image loading, format/size checks
+│   ├── canvas.js            — canvas compositing, rotation, PNG/PDF export
+│   ├── storage.js           — localStorage persistence for uploaded images
+│   └── ui.js                — toast notifications, button states, download triggers
+├── styles/
+│   └── style.css            — all styling (~277 lines)
+├── tests/
+│   └── test.html            — browser-based test suite
+└── README.md
 ```
+
+## Architecture
+
+The application is split into focused modules:
+
+| Module | Responsibility |
+|--------|---------------|
+| `app.js` | Entry point — initializes grid, restores saved state, wires up download buttons |
+| `grid.js` | Creates the 8-slot grid, handles click-to-upload, drag-and-drop, and slot remove buttons |
+| `files.js` | Validates file type (JPG/PNG/GIF) and size, reads files as data URLs, handles corrupted images |
+| `canvas.js` | Composites all 8 images onto an offscreen canvas with 180° rotation for top row, exports as PNG or PDF |
+| `storage.js` | Saves/restores uploaded images to localStorage so work persists across page reloads |
+| `ui.js` | Toast notification system, download button enable/disable, and loading states |
+
+### Toast Notifications
+
+User-facing messages (invalid file type, file too large, corrupted image, PDF generation failure, "All images cleared") surface via non-blocking toast notifications that auto-dismiss. Respects `prefers-reduced-motion`.
+
+### Persistence
+
+Uploaded images are saved to `localStorage` as data URLs. When you reopen the page, your previous images are automatically restored. Use the "Clear All" button to remove saved state.
+
+## Testing
+
+Open `tests/test.html` in a browser to run the test suite. Tests cover file validation, grid interactions, canvas rendering, and storage persistence.

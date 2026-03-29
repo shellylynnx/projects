@@ -24,11 +24,18 @@ Browse bird-related artwork from [The Metropolitan Museum of Art](https://www.me
 METBird/
   index.html                   # Single-page app entry point
   scripts/
-    app.js                     # Application logic (search, pagination, detail panel, taxonomy)
+    app.js                     # Main entry point — initializes modules and coordinates app state
+    api.js                     # MET API fetch logic with retry, batching, and caching
+    search.js                  # Search, autocomplete, filtering, pagination, and series browsing
+    taxonomy.js                # Species matching from artwork titles via eBird taxonomy
+    ui.js                      # DOM rendering — detail panel, list items, popups, and toast notifications
     bird-object-ids.js         # Pre-built index of bird artwork object IDs and titles
     bird-taxonomy.js           # eBird taxonomy data, per-artwork overrides, and plate entries
   styles/
-    style.css                  # All styling
+    style.css                  # All styling (~320 lines)
+  sw.js                        # Service worker — network-first caching for API, cache-first for static assets
+  tests/
+    test.html                  # Browser-based test suite
 ```
 
 ## How It Works
@@ -69,6 +76,33 @@ Open `index.html` in a browser. No build step or server required — it's a stat
 - **Usage in this project**: METBird does **not** make any runtime API calls to eBird. All taxonomy data (species names, scientific names, families, and eBird profile URLs) is pre-built and stored locally in `bird-taxonomy.js`. The eBird API was used only during development to look up species information.
 - **Attribution**: Bird taxonomy data is sourced from [eBird](https://ebird.org/), a project of the [Cornell Lab of Ornithology](https://www.birds.cornell.edu/). eBird links in the app direct users to species profile pages on ebird.org.
 - **License**: Non-commercial use. Commercial use requires prior written permission from the Cornell Lab of Ornithology (ebird@cornell.edu).
+
+## Architecture
+
+The application is split into focused modules:
+
+| Module | Responsibility |
+|--------|---------------|
+| `app.js` | Entry point — initializes all modules, manages global state |
+| `api.js` | MET API communication — fetch with retry, batching (5 concurrent), sessionStorage caching |
+| `search.js` | Search input, species-aware autocomplete, series filtering, pagination, result rendering |
+| `taxonomy.js` | Bird species identification from artwork titles, eBird taxonomy lookups |
+| `ui.js` | DOM rendering — detail panel, grid/list items, toast notifications, loading states |
+| `sw.js` | Service worker — network-first for API responses, cache-first for static assets |
+
+### Offline Support
+
+The service worker (`sw.js`) caches static assets and API responses:
+- **Static assets** (HTML, CSS, JS, data files): cache-first, updated in background
+- **MET API responses**: network-first with cache fallback for offline viewing of previously loaded artworks
+
+### Toast Notifications
+
+User-facing errors (API failures, rate limiting, network issues) surface via non-blocking toast messages that auto-dismiss. Toast types: `error` (red), `info` (blue).
+
+## Testing
+
+Open `tests/test.html` in a browser to run the test suite. Tests cover module loading, search functionality, taxonomy matching, and UI rendering.
 
 ## Credits
 
