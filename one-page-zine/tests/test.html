@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>One Page Zine — Tests</title>
+  <style>
+    body { font-family: monospace; padding: 2rem; background: #1a1a1a; color: #ccc; }
+    h1 { color: #fff; margin-bottom: 1rem; }
+    .pass { color: #4caf50; }
+    .fail { color: #f44336; }
+    .suite { margin: 1rem 0; padding: 0.5rem; border-left: 3px solid #444; }
+    .suite-name { color: #aaa; font-weight: bold; margin-bottom: 0.5rem; }
+    .result { margin-left: 1rem; }
+    #summary { margin-top: 2rem; font-size: 1.2em; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>One Page Zine — Tests</h1>
+  <div id="output"></div>
+  <div id="summary"></div>
+  <script type="module">
+    import { coverCrop } from '../scripts/canvas.js';
+    import { validateFile } from '../scripts/files.js';
+    import { loadAllData, saveImage, removeStoredImage, clearAllData } from '../scripts/storage.js';
+
+    const output = document.getElementById('output');
+    const summaryEl = document.getElementById('summary');
+    let passed = 0;
+    let failed = 0;
+    let currentSuite = null;
+
+    function suite(name) {
+      currentSuite = document.createElement('div');
+      currentSuite.className = 'suite';
+      const title = document.createElement('div');
+      title.className = 'suite-name';
+      title.textContent = name;
+      currentSuite.appendChild(title);
+      output.appendChild(currentSuite);
+    }
+
+    function assert(description, condition) {
+      const el = document.createElement('div');
+      el.className = 'result';
+      if (condition) {
+        el.innerHTML = `<span class="pass">PASS</span> ${description}`;
+        passed++;
+      } else {
+        el.innerHTML = `<span class="fail">FAIL</span> ${description}`;
+        failed++;
+      }
+      currentSuite.appendChild(el);
+    }
+
+    function assertDeepEqual(description, actual, expected) {
+      assert(description, JSON.stringify(actual) === JSON.stringify(expected));
+    }
+
+    // ─── coverCrop tests ──────────────────────────────────────────────────────
+
+    suite('coverCrop — image fitting algorithm');
+
+    (() => {
+      // Wide image into square target: should crop sides
+      const result = coverCrop(1000, 500, 200, 200);
+      assert('Wide image: crops sides (sw = sh * ratio)', result.sw === 500);
+      assert('Wide image: full height used (sh = imgH)', result.sh === 500);
+      assert('Wide image: centered horizontally', result.sx === 250);
+      assert('Wide image: no vertical offset', result.sy === 0);
+    })();
+
+    (() => {
+      // Tall image into square target: should crop top/bottom
+      const result = coverCrop(500, 1000, 200, 200);
+      assert('Tall image: full width used (sw = imgW)', result.sw === 500);
+      assert('Tall image: crops top/bottom (sh = sw / ratio)', result.sh === 500);
+      assert('Tall image: no horizontal offset', result.sx === 0);
+      assert('Tall image: centered vertically', result.sy === 250);
+    })();
+
+    (() => {
+      // Exact match: no cropping needed
+      const result = coverCrop(400, 200, 400, 200);
+      assert('Exact match: full width', result.sw === 400);
+      assert('Exact match: full height', result.sh === 200);
+      assert('Exact match: no x offset', result.sx === 0);
+      assert('Exact match: no y offset', result.sy === 0);
+    })();
+
+    (() => {
+      // Same aspect ratio, different size
+      const result = coverCrop(800, 400, 200, 100);
+      assert('Same ratio: full width', result.sw === 800);
+      assert('Same ratio: full height', result.sh === 400);
+    })();
+
+    // ─── validateFile tests ───────────────────────────────────────────────────
+
+    suite('validateFile — file validation');
+
+    assert('null file returns error', validateFile(null) === 'No file selected.');
+    assert('undefined file returns error', validateFile(undefined) === 'No file selected.');
+
+    assert('JPEG is valid', validateFile(new File(['x'], 'photo.jpg', { type: 'image/jpeg' })) === null);
+    assert('PNG is valid', validateFile(new File(['x'], 'photo.png', { type: 'image/png' })) === null);
+    assert('GIF is valid', validateFile(new File(['x'], 'photo.gif', { type: 'image/gif' })) === null);
+
+    (() => {
+      const result = validateFile(new File(['x'], 'doc.pdf', { type: 'application/pdf' }));
+      assert('PDF is rejected', result !== null && result.includes('Invalid file type'));
+    })();
+
+    (() => {
+      // Create a file just over 10MB
+      const bigContent = new Uint8Array(10 * 1024 * 1024 + 1);
+      const bigFile = new File([bigContent], 'huge.jpg', { type: 'image/jpeg' });
+      const result = validateFile(bigFile);
+      assert('File over 10MB is rejected', result !== null && result.includes('too large'));
+    })();
+
+    (() => {
+      // File at exactly 10MB should be accepted
+      const content = new Uint8Array(10 * 1024 * 1024);
+      const file = new File([content], 'exact.jpg', { type: 'image/jpeg' });
+      assert('File at exactly 10MB is accepted', validateFile(file) === null);
+    })();
+
+    // ─── localStorage tests ──────────────────────────────────────────────────
+
+    suite('localStorage persistence');
+
+    // Clean slate
+    clearAllData();
+    assertDeepEqual('Empty storage returns 8 nulls', loadAllData(), [null,null,null,null,null,null,null,null]);
+
+    saveImage(0, 'data:image/png;base64,abc');
+    const afterSave = loadAllData();
+    assert('saveImage stores at correct index', afterSave[0] === 'data:image/png;base64,abc');
+    assert('Other slots remain null', afterSave[1] === null && afterSave[7] === null);
+
+    saveImage(7, 'data:image/png;base64,xyz');
+    assert('Multiple saves work', loadAllData()[7] === 'data:image/png;base64,xyz');
+
+    removeStoredImage(0);
+    assert('removeStoredImage clears the slot', loadAllData()[0] === null);
+    assert('removeStoredImage preserves other slots', loadAllData()[7] === 'data:image/png;base64,xyz');
+
+    clearAllData();
+    assertDeepEqual('clearAllData resets everything', loadAllData(), [null,null,null,null,null,null,null,null]);
+
+    // ─── Summary ─────────────────────────────────────────────────────────────
+
+    const total = passed + failed;
+    summaryEl.className = failed === 0 ? 'pass' : 'fail';
+    summaryEl.textContent = `${passed}/${total} tests passed` + (failed > 0 ? ` (${failed} failed)` : ' — all clear!');
+  </script>
+</body>
+</html>

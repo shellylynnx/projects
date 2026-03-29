@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>METBird — Tests</title>
+  <style>
+    body { font-family: monospace; padding: 2rem; background: #1a1a1a; color: #ccc; }
+    h1 { color: #fff; margin-bottom: 1rem; }
+    .pass { color: #4caf50; }
+    .fail { color: #f44336; }
+    .suite { margin: 1rem 0; padding: 0.5rem; border-left: 3px solid #444; }
+    .suite-name { color: #aaa; font-weight: bold; margin-bottom: 0.5rem; }
+    .result { margin-left: 1rem; }
+    #summary { margin-top: 2rem; font-size: 1.2em; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>METBird — Tests</h1>
+  <div id="output"></div>
+  <div id="summary"></div>
+  <script type="module">
+    import { buildPluralForms, buildPluralRegex, _escRx } from '../scripts/taxonomy.js';
+    import { esc } from '../scripts/ui.js';
+
+    const output = document.getElementById('output');
+    const summaryEl = document.getElementById('summary');
+    let passed = 0, failed = 0;
+    let currentSuite = null;
+
+    function suite(name) {
+      currentSuite = document.createElement('div');
+      currentSuite.className = 'suite';
+      const title = document.createElement('div');
+      title.className = 'suite-name';
+      title.textContent = name;
+      currentSuite.appendChild(title);
+      output.appendChild(currentSuite);
+    }
+
+    function assert(desc, cond) {
+      const el = document.createElement('div');
+      el.className = 'result';
+      if (cond) { el.innerHTML = `<span class="pass">PASS</span> ${desc}`; passed++; }
+      else { el.innerHTML = `<span class="fail">FAIL</span> ${desc}`; failed++; }
+      currentSuite.appendChild(el);
+    }
+
+    // ─── buildPluralForms tests ──────────────────────────────────
+
+    suite('buildPluralForms — plural/singular generation');
+
+    (() => {
+      const forms = buildPluralForms('eagle');
+      assert('eagle → includes "eagle"', forms.has('eagle'));
+      assert('eagle → includes "eagles"', forms.has('eagles'));
+    })();
+
+    (() => {
+      const forms = buildPluralForms('goose');
+      assert('goose → includes "geese" (irregular)', forms.has('geese'));
+      assert('goose → includes "goose"', forms.has('goose'));
+    })();
+
+    (() => {
+      const forms = buildPluralForms('geese');
+      assert('geese → includes "goose" (irregular reverse)', forms.has('goose'));
+    })();
+
+    (() => {
+      const forms = buildPluralForms('finch');
+      assert('finch → includes "finches"', forms.has('finches'));
+      assert('finch → includes "finch"', forms.has('finch'));
+    })();
+
+    (() => {
+      const forms = buildPluralForms('canary');
+      assert('canary → includes "canaries"', forms.has('canaries'));
+      assert('canary → includes "canary"', forms.has('canary'));
+    })();
+
+    (() => {
+      const forms = buildPluralForms('ibis');
+      assert('ibis → includes "ibises"', forms.has('ibises'));
+    })();
+
+    // ─── buildPluralRegex tests ─────────────────────────────────
+
+    suite('buildPluralRegex — matching in titles');
+
+    (() => {
+      const re = buildPluralRegex('eagle');
+      assert('Matches "Eagle" in title', re.test('Bald Eagle in Flight'));
+      assert('Matches "Eagles" (plural)', re.test('Three Eagles'));
+      assert('Does not match "beagle" (word boundary)', !re.test('A Beagle Dog'));
+    })();
+
+    (() => {
+      const re = buildPluralRegex('crane');
+      assert('Matches "Crane" standalone', re.test('Red-crowned Crane'));
+      assert('Matches "Cranes" plural', re.test('Two Cranes'));
+    })();
+
+    (() => {
+      const re = buildPluralRegex('goose');
+      assert('Matches "Geese" (irregular plural)', re.test('Canada Geese'));
+      assert('Matches "Goose" singular', re.test('Snow Goose'));
+    })();
+
+    // ─── esc (HTML escaping) tests ──────────────────────────────
+
+    suite('esc — HTML entity escaping');
+
+    assert('Escapes <', esc('<script>') === '&lt;script&gt;');
+    assert('Escapes &', esc('foo & bar') === 'foo &amp; bar');
+    assert('Escapes "', esc('a "b" c') === 'a &quot;b&quot; c');
+    assert("Escapes '", esc("a 'b' c") === 'a &#39;b&#39; c');
+    assert('Returns empty for null', esc(null) === '');
+    assert('Returns empty for undefined', esc(undefined) === '');
+    assert('Handles numbers', esc(42) === '42');
+
+    // ─── _escRx (regex escaping) tests ──────────────────────────
+
+    suite('_escRx — regex special character escaping');
+
+    assert('Escapes dot', _escRx('a.b') === 'a\\.b');
+    assert('Escapes parens', _escRx('(foo)') === '\\(foo\\)');
+    assert('Escapes brackets', _escRx('[bar]') === '\\[bar\\]');
+    assert('Plain text unchanged', _escRx('hello') === 'hello');
+
+    // ─── Summary ─────────────────────────────────────────────────
+
+    const total = passed + failed;
+    summaryEl.className = failed === 0 ? 'pass' : 'fail';
+    summaryEl.textContent = `${passed}/${total} tests passed` + (failed > 0 ? ` (${failed} failed)` : ' — all clear!');
+  </script>
+</body>
+</html>

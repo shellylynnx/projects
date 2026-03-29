@@ -15,6 +15,44 @@ const CACHE_TTL_DOG_RUNS  = 7 * 24 * 60 * 60 * 1000;   // 7 days (static data)
 // In-memory cache for individual park boundaries (cleared on page reload)
 const parkBoundaryCache = new Map();
 
+// ── Abort controller registry ──────────────────────────────────
+// Cancel in-flight requests when user changes filters or modes
+const _controllers = new Map();
+function getSignal(key) {
+  if (_controllers.has(key)) _controllers.get(key).abort();
+  const c = new AbortController();
+  _controllers.set(key, c);
+  return c.signal;
+}
+function abortAll() {
+  for (const [, c] of _controllers) c.abort();
+  _controllers.clear();
+}
+
+// ── Toast notifications ────────────────────────────────────────
+function showToast(message, type = 'error', duration = 8000) {
+  let container = document.getElementById('toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'toast-container';
+    container.className = 'toast-container';
+    container.setAttribute('aria-live', 'polite');
+    container.setAttribute('role', 'status');
+    document.body.appendChild(container);
+  }
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.setAttribute('role', 'alert');
+  toast.innerHTML = `<span class="toast-message">${escHTML(message)}</span><button class="toast-close" aria-label="Dismiss notification">&times;</button>`;
+  toast.querySelector('.toast-close').addEventListener('click', () => {
+    toast.classList.add('toast-exit');
+    setTimeout(() => toast.remove(), 300);
+  });
+  container.appendChild(toast);
+  requestAnimationFrame(() => toast.classList.add('toast-enter'));
+  if (duration > 0) setTimeout(() => { if (toast.parentNode) { toast.classList.add('toast-exit'); setTimeout(() => toast.remove(), 300); } }, duration);
+}
+
 // Fix double-encoded UTF-8 from the source data (e.g. "Ã±" → "ñ")
 function fixEncoding(str) {
   if (!str) return str;
@@ -76,7 +114,7 @@ function initMap() {
     });
     fetch('data/boroughs.geojson').then(r => r.json()).then(d => {
       if (map.getSource('boroughs')) map.getSource('boroughs').setData(d);
-    }).catch(() => {});
+    }).catch(() => { showToast('Could not load borough boundaries.', 'error'); });
 
     map.addLayer({
       id: 'borough-fill',
@@ -506,8 +544,9 @@ async function loadComplaints() {
   url.searchParams.set('$limit', limit);
   url.searchParams.set('$order', 'created_date DESC');
 
+  const signal = getSignal('complaints');
   try {
-    const res = await fetch(url.toString());
+    const res = await fetch(url.toString(), { signal });
     if (!res.ok) throw new Error(`API returned ${res.status}`);
     const data = await res.json();
     currentData = data;
@@ -515,7 +554,9 @@ async function loadComplaints() {
     renderMarkers(data);
     updateStats(data);
   } catch (err) {
+    if (err.name === 'AbortError') return;
     showError(err.message);
+    showToast('Could not load complaints. NYC Open Data may be temporarily unavailable.', 'error');
   } finally {
     btn.textContent = 'Load Complaints';
     btn.disabled = false;
@@ -554,11 +595,12 @@ function renderList(data) {
       ? `<div class="card-park">${parkName}</div>`
       : isInPark ? `<div class="card-park card-park-unspecified">Park</div>` : '';
 
+    const statusIcon  = c.status === 'Open' ? '● ' : '✓ ';
     return `
-      <div class="complaint-card" data-idx="${i}" onclick="focusMarker(${i})">
+      <div class="complaint-card" data-idx="${i}" onclick="focusMarker(${i})" role="button" tabindex="0" aria-label="${address} - ${c.status === 'Open' ? 'Open' : 'Closed'}">
         <div class="card-top">
           <span class="card-address">${address}</span>
-          <span class="card-status ${c.status === 'Open' ? 'status-open' : 'status-closed'}">${escHTML(c.status)}</span>
+          <span class="card-status ${c.status === 'Open' ? 'status-open' : 'status-closed'}">${statusIcon}${escHTML(c.status)}</span>
         </div>
         <div class="card-meta">
           <span class="card-borough">${borough}</span>
@@ -1100,6 +1142,7 @@ function applyParkBoundaryData(data, rawParkName) {
 
 // ── Data mode (Complaints / Dog Runs / Animals) ──────────────────
 function onDataModeChange(mode) {
+  abortAll(); // cancel any in-flight requests from the previous mode
   currentMode = mode;
   const isComplaints = mode === 'complaints';
   const isDogRuns    = mode === 'dogruns';
@@ -1502,8 +1545,9 @@ async function loadAnimalIncidents() {
   url.searchParams.set('$limit', limit);
   url.searchParams.set('$order', 'date_and_time_of_initial DESC');
 
+  const signal = getSignal('animals');
   try {
-    const res = await fetch(url.toString());
+    const res = await fetch(url.toString(), { signal });
     if (!res.ok) throw new Error(`API returned ${res.status}`);
     const data = await res.json();
     animalData = data;
@@ -1511,7 +1555,9 @@ async function loadAnimalIncidents() {
     renderAnimalMarkers(data);
     updateAnimalStats(data);
   } catch (err) {
+    if (err.name === 'AbortError') return;
     showError(err.message);
+    showToast('Could not load animal incidents. NYC Open Data may be temporarily unavailable.', 'error');
   } finally {
     btn.textContent = 'Load Incidents';
     btn.disabled = false;
@@ -1547,7 +1593,7 @@ function renderAnimalList(data) {
     const condClass = ANIMAL_COND_CLASS[inc.animal_condition] || 'cond-unknown';
 
     return `
-      <div class="complaint-card animal-card" data-idx="${idx}" onclick="focusAnimalCard(${idx})">
+      <div class="complaint-card animal-card" data-idx="${idx}" onclick="focusAnimalCard(${idx})" role="button" tabindex="0" aria-label="${species} - ${cond || 'Unknown condition'} - ${park || borough}">
         <div class="card-top">
           <span class="card-address">${species}</span>
           ${cond ? `<span class="card-status animal-cond-badge ${condClass}">${cond}</span>` : ''}
@@ -1684,3 +1730,34 @@ initDogRunZipAutocomplete();
 // Defer park list load — only needed for complaints mode filter
 let parkListLoaded = false;
 function ensureParkList() { if (!parkListLoaded) { parkListLoaded = true; loadParkList(); } }
+
+// ── Accessibility enhancements ────────────────────────────────
+(function initAccessibility() {
+  // Add aria-labels to buttons
+  document.querySelectorAll('.modal-close').forEach(btn => {
+    if (!btn.getAttribute('aria-label')) btn.setAttribute('aria-label', 'Close modal');
+  });
+  // Add aria-live to dynamic regions
+  const stats = document.getElementById('stats');
+  if (stats) { stats.setAttribute('aria-live', 'polite'); stats.setAttribute('aria-atomic', 'true'); }
+  const listCount = document.getElementById('list-count');
+  if (listCount) { listCount.setAttribute('aria-live', 'polite'); }
+  const list = document.getElementById('complaint-list');
+  if (list) { list.setAttribute('aria-live', 'polite'); list.setAttribute('aria-relevant', 'additions removals'); }
+  // Modal aria-hidden on page load
+  ['report-modal', 'park-report-modal', 'animal-report-modal'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && !el.classList.contains('open')) el.setAttribute('aria-hidden', 'true');
+  });
+  // Keyboard support for complaint cards (Enter/Space)
+  document.getElementById('complaint-list')?.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      const card = e.target.closest('.complaint-card');
+      if (card) { e.preventDefault(); card.click(); }
+    }
+  });
+  // View tabs
+  document.getElementById('tab-map')?.setAttribute('aria-label', 'Show map view');
+  document.getElementById('tab-list')?.setAttribute('aria-label', 'Show list view');
+  document.getElementById('report-mode-btn')?.setAttribute('aria-label', 'Report a dog or animal');
+})();

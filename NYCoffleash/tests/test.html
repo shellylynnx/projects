@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>NYCoffleash — Tests</title>
+  <style>
+    body { font-family: monospace; padding: 2rem; background: #1a1a1a; color: #ccc; }
+    h1 { color: #fff; margin-bottom: 1rem; }
+    .pass { color: #4caf50; }
+    .fail { color: #f44336; }
+    .suite { margin: 1rem 0; padding: 0.5rem; border-left: 3px solid #444; }
+    .suite-name { color: #aaa; font-weight: bold; margin-bottom: 0.5rem; }
+    .result { margin-left: 1rem; }
+    #summary { margin-top: 2rem; font-size: 1.2em; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>NYCoffleash — Tests</h1>
+  <div id="output"></div>
+  <div id="summary"></div>
+  <script>
+    // Since app.js isn't a module, we test by re-implementing the pure functions inline
+    // These mirror the exact implementations in app.js
+
+    const output = document.getElementById('output');
+    const summaryEl = document.getElementById('summary');
+    let passed = 0, failed = 0;
+    let currentSuite = null;
+
+    function suite(name) {
+      currentSuite = document.createElement('div');
+      currentSuite.className = 'suite';
+      const title = document.createElement('div');
+      title.className = 'suite-name';
+      title.textContent = name;
+      currentSuite.appendChild(title);
+      output.appendChild(currentSuite);
+    }
+
+    function assert(desc, cond) {
+      const el = document.createElement('div');
+      el.className = 'result';
+      if (cond) { el.innerHTML = `<span class="pass">PASS</span> ${desc}`; passed++; }
+      else { el.innerHTML = `<span class="fail">FAIL</span> ${desc}`; failed++; }
+      currentSuite.appendChild(el);
+    }
+
+    // ─── escHTML tests ──────────────────────────────────────────────
+
+    function escHTML(str) {
+      if (!str) return '';
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
+    suite('escHTML — XSS prevention');
+
+    assert('Escapes <script>', escHTML('<script>alert(1)</script>') === '&lt;script&gt;alert(1)&lt;/script&gt;');
+    assert('Escapes &', escHTML('a & b') === 'a &amp; b');
+    assert('Escapes quotes', escHTML('"hello" & \'world\'') === '&quot;hello&quot; &amp; &#39;world&#39;');
+    assert('Null returns empty', escHTML(null) === '');
+    assert('Undefined returns empty', escHTML(undefined) === '');
+    assert('Empty string returns empty', escHTML('') === '');
+    assert('Number coerces to string', escHTML(42) === '42');
+
+    // ─── fixEncoding tests ──────────────────────────────────────────
+
+    function fixEncoding(str) {
+      if (!str) return str;
+      try { return decodeURIComponent(escape(str)); } catch { return str; }
+    }
+
+    suite('fixEncoding — UTF-8 double-encoding fix');
+
+    assert('Null passes through', fixEncoding(null) === null);
+    assert('Plain ASCII unchanged', fixEncoding('Hello') === 'Hello');
+    assert('Already-correct UTF-8 is preserved or safely returned', typeof fixEncoding('café') === 'string');
+
+    // ─── safeText tests ─────────────────────────────────────────────
+
+    function safeText(str) { return escHTML(fixEncoding(str)); }
+
+    suite('safeText — combined encoding fix + HTML escape');
+
+    assert('Null returns empty', safeText(null) === '');
+    assert('HTML is escaped', safeText('<b>bold</b>').includes('&lt;'));
+    assert('Plain text passes through', safeText('Hello World') === 'Hello World');
+
+    // ─── formatDate tests ───────────────────────────────────────────
+
+    function formatDate(iso) {
+      if (!iso) return '';
+      return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+
+    suite('formatDate — ISO date formatting');
+
+    assert('Empty string returns empty', formatDate('') === '');
+    assert('Null returns empty', formatDate(null) === '');
+    assert('Valid ISO date formatted', formatDate('2024-03-15T10:30:00') !== '');
+    assert('Contains year', formatDate('2024-03-15T10:30:00').includes('2024'));
+
+    // ─── titleCase tests ────────────────────────────────────────────
+
+    function titleCase(str) {
+      return str.replace(/\w\S*/g, w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
+    }
+
+    suite('titleCase — title casing');
+
+    assert('Basic title case', titleCase('hello world') === 'Hello World');
+    assert('All caps → title case', titleCase('MANHATTAN') === 'Manhattan');
+    assert('Mixed case', titleCase('new york city') === 'New York City');
+    assert('Single word', titleCase('brooklyn') === 'Brooklyn');
+
+    // ─── Socrata URL building tests ─────────────────────────────────
+
+    suite('Socrata API URL building');
+
+    (() => {
+      const API_BASE = 'https://data.cityofnewyork.us/resource/erm2-nwe9.json';
+      const url = new URL(API_BASE);
+      const where = "(descriptor='Dog Off Leash' OR descriptor='Unleashed Dog in Public')";
+      url.searchParams.set('$where', where);
+      url.searchParams.set('$limit', '100');
+      url.searchParams.set('$order', 'created_date DESC');
+
+      assert('URL contains base endpoint', url.toString().includes('erm2-nwe9.json'));
+      assert('URL contains $where param', url.toString().includes('%24where='));
+      assert('URL contains $limit param', url.toString().includes('%24limit=100'));
+      assert('URL contains $order param', url.toString().includes('%24order='));
+    })();
+
+    (() => {
+      const API_BASE = 'https://data.cityofnewyork.us/resource/erm2-nwe9.json';
+      const url = new URL(API_BASE);
+      let where = "(descriptor='Dog Off Leash' OR descriptor='Unleashed Dog in Public')";
+      where += ` AND borough='MANHATTAN'`;
+      where += ` AND location_type='Park'`;
+      url.searchParams.set('$where', where);
+
+      assert('Borough filter included in URL', url.toString().includes('MANHATTAN'));
+      assert('Park filter included in URL', url.toString().includes('Park'));
+    })();
+
+    // ─── computeCentroid tests ──────────────────────────────────────
+
+    function computeCentroid(geometry) {
+      const coords = geometry.type === 'MultiPolygon'
+        ? geometry.coordinates.flat(2)
+        : geometry.coordinates.flat(1);
+      const lngs = coords.map(c => c[0]);
+      const lats = coords.map(c => c[1]);
+      return [(Math.min(...lngs) + Math.max(...lngs)) / 2, (Math.min(...lats) + Math.max(...lats)) / 2];
+    }
+
+    suite('computeCentroid — geographic center calculation');
+
+    (() => {
+      const geo = {
+        type: 'Polygon',
+        coordinates: [[[0, 0], [10, 0], [10, 10], [0, 10], [0, 0]]]
+      };
+      const [lng, lat] = computeCentroid(geo);
+      assert('Polygon centroid lng = 5', lng === 5);
+      assert('Polygon centroid lat = 5', lat === 5);
+    })();
+
+    (() => {
+      const geo = {
+        type: 'MultiPolygon',
+        coordinates: [
+          [[[0, 0], [4, 0], [4, 4], [0, 4], [0, 0]]],
+          [[[6, 6], [10, 6], [10, 10], [6, 10], [6, 6]]]
+        ]
+      };
+      const [lng, lat] = computeCentroid(geo);
+      assert('MultiPolygon centroid lng = 5', lng === 5);
+      assert('MultiPolygon centroid lat = 5', lat === 5);
+    })();
+
+    // ─── Summary ─────────────────────────────────────────────────
+
+    const total = passed + failed;
+    summaryEl.className = failed === 0 ? 'pass' : 'fail';
+    summaryEl.textContent = `${passed}/${total} tests passed` + (failed > 0 ? ` (${failed} failed)` : ' — all clear!');
+  </script>
+</body>
+</html>

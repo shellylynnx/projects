@@ -33,7 +33,7 @@ header p {
   color: #AEB784;
 }
 
-/* 2 rows × 4 columns grid */
+/* 2 rows x 4 columns grid */
 .grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -60,9 +60,15 @@ header p {
 }
 
 .slot:hover,
+.slot:focus-visible,
 .slot.dragover {
   border-color: #41431B;
   background: #E3DBBB;
+}
+
+.slot:focus-visible {
+  outline: 3px solid #41431B;
+  outline-offset: -3px;
 }
 
 .slot.filled {
@@ -76,7 +82,7 @@ header p {
   display: block;
 }
 
-/* Slots 1–4 (index 0–3) show image rotated 180° */
+/* Slots 1-4 (index 0-3) show image rotated 180deg */
 .slot[data-index="0"] img,
 .slot[data-index="1"] img,
 .slot[data-index="2"] img,
@@ -117,6 +123,12 @@ header p {
   align-items: center;
   justify-content: center;
   line-height: 1;
+  transition: background 0.2s;
+}
+
+.slot .remove:focus-visible {
+  outline: 2px solid #F8F3E1;
+  outline-offset: 1px;
 }
 
 .slot.filled .remove {
@@ -154,7 +166,8 @@ header p {
 }
 
 button#downloadBtn,
-button#downloadImgBtn {
+button#downloadImgBtn,
+button#clearAllBtn {
   width: 200px;
   padding: 0.65rem 1.5rem;
   font-size: 0.75rem;
@@ -170,7 +183,8 @@ button#downloadBtn {
   border: 2px solid #41431B;
 }
 
-button#downloadImgBtn {
+button#downloadImgBtn,
+button#clearAllBtn {
   background: #F8F3E1;
   color: #41431B;
   border: 2px solid #41431B;
@@ -180,7 +194,8 @@ button#downloadBtn:hover:not(:disabled) {
   background: #AEB784;
 }
 
-button#downloadImgBtn:hover:not(:disabled) {
+button#downloadImgBtn:hover:not(:disabled),
+button#clearAllBtn:hover {
   background: #E3DBBB;
 }
 
@@ -190,4 +205,73 @@ button#downloadImgBtn:disabled {
   color: #AEB784;
   border-color: #E3DBBB;
   cursor: not-allowed;
+}
+
+button:focus-visible {
+  outline: 3px solid #41431B;
+  outline-offset: 2px;
+}
+
+/* ─── Toast notifications ───────────────────────────────────────────────────── */
+
+#toast-container {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.toast {
+  padding: 0.75rem 1.25rem;
+  border-radius: 6px;
+  font-family: Georgia, serif;
+  font-size: 0.85rem;
+  color: #F8F3E1;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.3s, transform 0.3s;
+  pointer-events: auto;
+  max-width: 400px;
+  text-align: center;
+}
+
+.toast-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.toast-error {
+  background: #8B2500;
+}
+
+.toast-info {
+  background: #41431B;
+}
+
+/* ─── Reduced motion ────────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .slot {
+    transition: none;
+  }
+
+  .slot .remove {
+    transition: none;
+  }
+
+  button#downloadBtn,
+  button#downloadImgBtn,
+  button#clearAllBtn {
+    transition: none;
+  }
+
+  .toast {
+    transition: none;
+  }
+
+  .toast-visible {
+    transform: none;
+  }
 }
