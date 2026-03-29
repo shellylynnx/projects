@@ -4,19 +4,36 @@ Browse bird-related artwork from [The Metropolitan Museum of Art](https://www.me
 
 ## Features
 
-- **9,752 bird artworks** indexed from the MET Open Access collection
-- **Species-aware autocomplete search** with 204 species and 98 historical/regional name aliases — clicking a species finds all artworks including those matched via former names
+- **9,751 bird artworks** indexed from the MET Open Access collection (5,069 with primary images)
+- **Species-aware autocomplete search** with 188 species across 72 bird families, plus 83 historical/regional name aliases — clicking a species finds all artworks including those matched via former names
 - **Bird Series browser** — filter by named art series (e.g., Birds of America, Game Birds, Drawings Made in the United States)
 - **Multi-plate artwork support** — multi-image MET objects (e.g., Audubon's *Birds of America*) are split into individual plates, each with its own image and eBird taxonomy
 - **Artwork detail panel** with full MET metadata, zoomable images, plate captions, and eBird taxonomy links
 - **Taxonomy matching** — automatically identifies bird species from artwork titles and displays scientific names, family, and eBird profile links
 - **Per-artwork overrides** for titles where the species can't be determined from the name alone (e.g., East Asian peacock artworks mapped to Green Peafowl)
+- **Modular ES module architecture** — split into 5 focused modules (app, api, search, taxonomy, ui) for maintainability
+- **Service worker** with offline support — previously viewed artworks remain accessible without a network connection
+- **Toast notifications** for non-blocking error feedback (API failures, rate limiting, network issues)
+- **Content Security Policy** — strict CSP header restricting scripts, styles, connections, and image sources
 
-## Data Sources
+## Data
+
+### At a Glance
+
+| Dataset | Count |
+|---------|-------|
+| Bird artworks indexed | 9,751 |
+| Artworks with primary image | 5,069 |
+| Bird species in taxonomy | 188 |
+| Bird families represented | 72 |
+| Historical/regional name aliases | 83 |
+| Total taxonomy entries | 271 |
+
+### Data Sources
 
 - **Artwork data**: [Metropolitan Museum of Art Open Access API](https://metmuseum.github.io/) — fetched at runtime for artwork details (images, dates, artists, etc.)
 - **Bird taxonomy**: [eBird](https://ebird.org/) by the [Cornell Lab of Ornithology](https://www.birds.cornell.edu/) — pre-built species data stored locally for instant matching
-- **Artwork index**: Pre-built list of 9,752 MET object IDs with bird-related titles, stored in `bird-object-ids.js`
+- **Artwork index**: Pre-built list of 9,751 MET object IDs with bird-related titles, stored in `bird-object-ids.js`
 
 ## Project Structure
 
@@ -49,7 +66,17 @@ METBird/
 
 ## Usage
 
-Open `index.html` in a browser. No build step or server required — it's a static single-page app that calls the MET API directly.
+Serve the files with any HTTP server (required for ES modules):
+
+```bash
+# Using npx (Node.js)
+npx serve -p 3456
+
+# Using Python
+python3 -m http.server 3456
+```
+
+Then open `http://localhost:3456` in your browser. No build step required.
 
 ## API Information
 
@@ -103,6 +130,22 @@ User-facing errors (API failures, rate limiting, network issues) surface via non
 ## Testing
 
 Open `tests/test.html` in a browser to run the test suite. Tests cover module loading, search functionality, taxonomy matching, and UI rendering.
+
+## Technology Stack
+
+| Technology | Purpose |
+|------------|---------|
+| Vanilla JavaScript (ES modules) | No frameworks — modular `import`/`export` architecture |
+| [Google Fonts](https://fonts.google.com/) | Inter (UI) and Playfair Display (headings) |
+| CSS3 | Responsive layout with Grid, Flexbox, and custom properties |
+
+## Security
+
+- **Content Security Policy** — strict CSP in `<meta>` tag restricting script sources, style sources, API connections, and image origins
+- **HTML escaping** — all API data sanitized before DOM insertion
+- **No API keys** — MET API is public and unauthenticated
+- **External links** — all use `target="_blank" rel="noopener"`
+- **Subresource preconnect** — early DNS/TLS for Google Fonts and MET API domains
 
 ## Credits
 
