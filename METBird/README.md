@@ -66,7 +66,9 @@ METBird/
 
 ## Usage
 
-Serve the files with any HTTP server (required for ES modules):
+If hosted (GitHub Pages, Netlify, etc.), just share the link — it works out of the box.
+
+To run locally, serve the files with any HTTP server (browsers require HTTP for ES module imports — opening `index.html` directly via `file://` won't work):
 
 ```bash
 # Using npx (Node.js)
@@ -76,7 +78,7 @@ npx serve -p 3456
 python3 -m http.server 3456
 ```
 
-Then open `http://localhost:3456` in your browser. No build step required.
+Then open `http://localhost:3456`. No build step required.
 
 ## API Information
 
