@@ -30,7 +30,3 @@ All projects are lightweight, single-page web apps with no build step required:
 - **MapLibre GL JS** — interactive maps (NYCoffleash)
 - **Service Workers** — offline support (METBird, NYCoffleash)
 - **NYC Open Data & MET Open Access APIs** — live public data
-
-## Built With
-
-These projects were built collaboratively with [Claude Code](https://docs.anthropic.com/en/docs/claude-code/overview).
