@@ -49,3 +49,13 @@ Then open `http://localhost:3000` in a browser. No build step required.
 23 standard risograph ink colors: Black, Burgundy, Blue, Green, Medium Blue, Federal Blue, Teal, Flat Gold, Hunter Green, Red, Scarlet, Fl. Pink, Fl. Orange, Yellow, Orange, Purple, Violet, Aqua, Mint, Light Teal, Coral, Brick, and Risofederal Blue.
 
 Colors are approximate screen representations. Actual print results will vary.
+
+## Built With
+
+- Vanilla JavaScript (ES modules), HTML, CSS — no frameworks or build tools
+- Canvas API for pixel-level image processing
+
+## References
+
+- Ink color RGB values sourced from [Stencil](https://stencil.wiki/colors) riso ink swatch references
+- Overprint simulation uses multiply blending, matching how risograph ink layers physically combine on paper
