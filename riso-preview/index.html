@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Riso Preview</title>
+  <link rel="stylesheet" href="styles/style.css" />
+</head>
+<body>
+
+<header>
+  <h1>Riso Preview</h1>
+  <p class="tagline">Preview artwork in risograph ink colors &amp; simulate overprint</p>
+</header>
+
+<main>
+  <!-- View mode bar -->
+  <section id="view-bar" class="hidden">
+    <div class="view-bar-inner">
+      <span class="view-bar-label">Show Color Layer</span>
+      <label class="view-layer-toggle" data-layer="0">
+        <input type="checkbox" class="color-layer-check" value="0" />
+        <span class="view-layer-name">Layer 1</span>
+      </label>
+      <label class="view-layer-toggle" data-layer="1">
+        <input type="checkbox" class="color-layer-check" value="1" />
+        <span class="view-layer-name">Layer 2</span>
+      </label>
+      <label class="view-layer-toggle" data-layer="2">
+        <input type="checkbox" class="color-layer-check" value="2" />
+        <span class="view-layer-name">Layer 3</span>
+      </label>
+    </div>
+  </section>
+
+  <!-- Upload area -->
+  <section id="upload-section">
+    <div class="upload-zone" id="upload-zone" role="button" tabindex="0" aria-label="Upload an image">
+      <div class="upload-prompt" id="upload-prompt">
+        <div class="upload-icon">&#9670;</div>
+        <div class="upload-text">Drop an image here or click to upload</div>
+        <div class="upload-hint">JPEG, PNG, or GIF &middot; max 10 MB</div>
+      </div>
+      <canvas id="source-canvas" style="display:none"></canvas>
+      <canvas id="mask-overlay" style="display:none"></canvas>
+      <input type="file" id="file-input" accept="image/jpeg,image/png,image/gif" hidden />
+    </div>
+  </section>
+
+  <!-- Mask toolbar -->
+  <section id="mask-section" class="hidden">
+    <div class="mask-toolbar">
+      <label class="toggle-label">
+        <input type="checkbox" id="mask-toggle" />
+        Enable Masks
+      </label>
+      <div class="mask-controls hidden" id="mask-controls">
+        <label class="mask-field">
+          <span class="mask-field-label">Paint for</span>
+          <select id="mask-layer">
+            <option value="0">Layer 1</option>
+            <option value="1">Layer 2</option>
+            <option value="2">Layer 3</option>
+          </select>
+        </label>
+        <div class="mask-tool-group">
+          <span class="mask-field-label">Tool</span>
+          <button class="btn btn-sm active" id="tool-brush">Brush</button>
+          <button class="btn btn-sm" id="tool-eraser">Eraser</button>
+          <button class="btn btn-sm" id="tool-magic">Magic Wand</button>
+        </div>
+        <label class="mask-field" id="brush-size-field">
+          <span class="mask-field-label">Size</span>
+          <input type="range" id="brush-size" min="3" max="80" value="20" />
+          <span id="brush-size-val" class="mask-val">20</span>
+        </label>
+        <label class="mask-field" id="tolerance-field" style="display:none">
+          <span class="mask-field-label">Tolerance</span>
+          <input type="range" id="magic-tolerance" min="1" max="100" value="32" />
+          <span id="tolerance-val" class="mask-val">32</span>
+        </label>
+        <label class="toggle-label" id="contiguous-field" style="display:none">
+          <input type="checkbox" id="magic-contiguous" checked />
+          Contiguous
+        </label>
+        <button class="btn btn-sm" id="mask-clear-btn">Clear Masks</button>
+      </div>
+    </div>
+    <p class="mask-hint" id="mask-hint">Paint on the source image to assign areas to individual layers. Unpainted areas use the full image.</p>
+  </section>
+
+  <!-- Layer controls -->
+  <section id="controls" class="hidden">
+    <div class="control-group">
+      <div class="control-col">
+        <label class="control-label">Layer 1</label>
+        <div class="swatch-grid" id="swatches-1" role="radiogroup" aria-label="Layer 1 color"></div>
+      </div>
+      <div class="control-col">
+        <label class="control-label">Layer 2</label>
+        <div class="swatch-grid" id="swatches-2" role="radiogroup" aria-label="Layer 2 color"></div>
+        <label class="toggle-label">
+          <input type="checkbox" id="layer2-toggle" checked />
+          Enable Layer 2
+        </label>
+      </div>
+      <div class="control-col">
+        <label class="control-label">Layer 3</label>
+        <div class="swatch-grid" id="swatches-3" role="radiogroup" aria-label="Layer 3 color"></div>
+        <label class="toggle-label">
+          <input type="checkbox" id="layer3-toggle" checked />
+          Enable Layer 3
+        </label>
+      </div>
+    </div>
+  </section>
+
+  <!-- Preview -->
+  <section id="preview-section" class="hidden">
+    <div class="preview-grid">
+      <div class="preview-card">
+        <div class="preview-label">Layer 1</div>
+        <canvas id="canvas-1"></canvas>
+      </div>
+      <div class="preview-card">
+        <div class="preview-label">Layer 2</div>
+        <canvas id="canvas-2"></canvas>
+      </div>
+      <div class="preview-card">
+        <div class="preview-label">Layer 3</div>
+        <canvas id="canvas-3"></canvas>
+      </div>
+      <div class="preview-card preview-card-main">
+        <div class="preview-label">Overprint</div>
+        <canvas id="canvas-out"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- Actions -->
+  <section id="actions" class="hidden">
+    <div class="actions-group">
+      <span class="actions-label">Color</span>
+      <button class="btn btn-primary" id="btn-download-1">Layer 1</button>
+      <button class="btn btn-primary" id="btn-download-2">Layer 2</button>
+      <button class="btn btn-primary" id="btn-download-3">Layer 3</button>
+      <button class="btn btn-primary" id="btn-download">Overprint</button>
+    </div>
+    <div class="actions-group">
+      <span class="actions-label">Plates (B&W)</span>
+      <button class="btn btn-outline" id="btn-plate-1">Layer 1</button>
+      <button class="btn btn-outline" id="btn-plate-2">Layer 2</button>
+      <button class="btn btn-outline" id="btn-plate-3">Layer 3</button>
+    </div>
+    <button class="btn btn-secondary" id="btn-clear">Clear Image</button>
+  </section>
+</main>
+
+<footer>
+  Risograph ink colors are approximate screen representations. Actual print results will vary.
+</footer>
+
+<div id="toast-container" role="status" aria-live="polite"></div>
+
+<script type="module" src="scripts/app.js"></script>
+</body>
+</html>
