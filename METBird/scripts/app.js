@@ -285,8 +285,9 @@ async function goToPage(page) {
   $('art-grid').innerHTML = `<div class="state-box"><div class="spinner"></div><div class="state-msg">Loading ${start + 1}–${end} of ${_allMatches.length.toLocaleString()}…</div></div>`;
 
   const objects = [];
-  for (let i = 0; i < pageItems.length; i += 5) {
-    const batch = pageItems.slice(i, i + 5);
+  for (let i = 0; i < pageItems.length; i += 3) {
+    if (i > 0) await new Promise(ok => setTimeout(ok, 200)); // throttle between batches
+    const batch = pageItems.slice(i, i + 3);
     const results = await Promise.all(batch.map(item => fetchObj(item.id)));
     for (let j = 0; j < results.length; j++) {
       const obj = results[j];
@@ -315,8 +316,17 @@ function prefetchNextPage(page) {
   const start = (next - 1) * PAGE_SIZE;
   const end = Math.min(start + PAGE_SIZE, _allMatches.length);
   const items = _allMatches.slice(start, end);
-  // Fire all fetches in background, don't block
-  Promise.all(items.map(item => fetchObj(item.id))).then(results => {
+  // Fire fetches in background with throttling
+  (async () => {
+    const results = [];
+    for (let i = 0; i < items.length; i += 3) {
+      if (i > 0) await new Promise(ok => setTimeout(ok, 200));
+      const batch = items.slice(i, i + 3);
+      const batchResults = await Promise.all(batch.map(item => fetchObj(item.id)));
+      results.push(...batchResults);
+    }
+    return results;
+  })().then(results => {
     if (_pageCache[next]) return; // already loaded
     const objs = [];
     for (let j = 0; j < results.length; j++) {
