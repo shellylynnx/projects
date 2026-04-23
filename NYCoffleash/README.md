@@ -2,7 +2,7 @@
 
 **NYC parks & animal resource and reporting**
 
-NYCoffleash is a free, open-source web app for exploring NYC dog runs, viewing off-leash dog complaints, tracking sick/injured animal reports, and accessing reporting resources — all on an interactive map powered by NYC Open Data.
+NYCoffleash is a free, open-source web app for exploring NYC dog runs, viewing off-leash dog complaints, tracking sick/injured animal reports, and accessing reporting resources, all on an interactive map powered by NYC Open Data.
 
 Live site: _coming soon_
 
@@ -85,7 +85,7 @@ Both files are optimized with reduced coordinate precision and stripped unused p
 | [MapLibre GL JS](https://maplibre.org/) v4.7.1 | Interactive WebGL map rendering |
 | [OpenFreeMap](https://openfreemap.org/) | Free map tile style (Liberty) |
 | System fonts | UI typeface (San Francisco on iOS, Segoe UI on Windows, Roboto on Android) |
-| Vanilla JavaScript | No frameworks — single `app.js` file (~1,760 lines) |
+| Vanilla JavaScript | No frameworks. Single `app.js` file (~1,760 lines). |
 | CSS3 | Responsive layout with CSS Grid, Flexbox, and custom properties |
 
 CDN: [jsDelivr](https://www.jsdelivr.com/) with Subresource Integrity (SRI) hashes for MapLibre.
@@ -115,7 +115,7 @@ NYCoffleash/
 
 ## Running Locally
 
-The app is a static site — no build step is needed. Serve the files with any HTTP server:
+The app is a static site. No build step is needed. Serve the files with any HTTP server:
 
 ```bash
 # Using npx (Node.js)
@@ -136,26 +136,26 @@ Then open `http://localhost:3456` in your browser.
 
 The app is optimized for fast loading on mobile:
 
-- **Branded loading screen** — inline CSS renders immediately, no flash of unstyled content
-- **Local data files** — dog runs and borough boundaries are bundled locally (no API calls on boot)
-- **Deferred loading** — parks layer, park list, and API data load only when needed
-- **Compressed GeoJSON** — reduced coordinate precision and stripped unused properties
-- **System fonts** — no external font downloads
-- **Deferred scripts** — HTML parses while JS downloads in parallel
-- **jsDelivr CDN** — fast HTTP/2 delivery with SRI integrity hashes
-- **Preconnect hints** — early DNS/TLS handshakes for external domains
-- **localStorage caching** — dog runs cached for 7 days, park lists for 24 hours
-- **Error recovery** — reload banner if map or data fails to load
+- **Branded loading screen**: inline CSS renders immediately, no flash of unstyled content
+- **Local data files**: dog runs and borough boundaries are bundled locally (no API calls on boot)
+- **Deferred loading**: parks layer, park list, and API data load only when needed
+- **Compressed GeoJSON**: reduced coordinate precision and stripped unused properties
+- **System fonts**: no external font downloads
+- **Deferred scripts**: HTML parses while JS downloads in parallel
+- **jsDelivr CDN**: fast HTTP/2 delivery with SRI integrity hashes
+- **Preconnect hints**: early DNS/TLS handshakes for external domains
+- **localStorage caching**: dog runs cached for 7 days, park lists for 24 hours
+- **Error recovery**: reload banner if map or data fails to load
 
 ---
 
 ## Security
 
-- **HTML escaping** — all API data is sanitized via `escHTML()` / `safeText()` before insertion into the DOM
-- **Subresource Integrity** — SRI hashes on CDN-loaded scripts and stylesheets
-- **No API keys** — all data sources are public, unauthenticated endpoints
-- **External links** — all use `target="_blank" rel="noopener"`
-- **No sensitive data** — `.gitignore` excludes `.env`, `.claude/`, and `node_modules/`
+- **HTML escaping**: all API data is sanitized via `escHTML()` / `safeText()` before insertion into the DOM
+- **Subresource Integrity**: SRI hashes on CDN-loaded scripts and stylesheets
+- **No API keys**: all data sources are public, unauthenticated endpoints
+- **External links**: all use `target="_blank" rel="noopener"`
+- **No sensitive data**: `.gitignore` excludes `.env`, `.claude/`, and `node_modules/`
 
 ---
 
@@ -182,8 +182,8 @@ The app links to official NYC resources for reporting:
 - **Call 311**: Tel links for quick dialing
 - **NYC311 App**: Links to the iOS App Store and Google Play Store
 - **NYC Parks Rangers**: For wildlife and stray animals in parks
-- **Animal Care Centers (ACC)**: Drop-off locations for common wildlife and stray animals — (212) 788-4000
-- **Wild Bird Fund**: Wildlife rescue and rehabilitation — (646) 306-2862
+- **Animal Care Centers (ACC)**: Drop-off locations for common wildlife and stray animals. (212) 788-4000
+- **Wild Bird Fund**: Wildlife rescue and rehabilitation. (646) 306-2862
 - **NYC Bird Alliance**: Bird flu (H5N1) information and safety guidance
 - **NYS DEC**: Dead wild bird reporting (outside of parks)
 - **Marine Animal Hotline**: For beached/stranded seals, turtles, and whales

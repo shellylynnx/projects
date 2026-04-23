@@ -24,9 +24,9 @@ Preview artwork in risograph ink colors and simulate overprint. Upload an image,
 
 All projects are lightweight, single-page web apps with no build step required:
 
-- **JavaScript** — vanilla ES modules, no frameworks
-- **HTML / CSS** — responsive layouts with mobile and tablet support
-- **Canvas API** — pixel-level image processing (Riso Preview, One Page Zine)
-- **MapLibre GL JS** — interactive maps (NYCoffleash)
-- **Service Workers** — offline support (METBird, NYCoffleash)
-- **NYC Open Data & MET Open Access APIs** — live public data
+- **JavaScript**: vanilla ES modules, no frameworks
+- **HTML / CSS**: responsive layouts with mobile and tablet support
+- **Canvas API**: pixel-level image processing (Riso Preview, One Page Zine)
+- **MapLibre GL JS**: interactive maps (NYCoffleash)
+- **Service Workers**: offline support (METBird, NYCoffleash)
+- **NYC Open Data & MET Open Access APIs**: live public data
