@@ -222,33 +222,33 @@ function paragraphsHtml(text, currentSlug) {
     .join("");
 }
 
-// Per-crop alt text for the 11 song-notation images. Sourced from
-// MANIFEST.md / gallery-quotes.md, each describing the syllabic phrase
-// Bailey transcribed so screen readers and search engines get a unique,
-// meaningful description per crop instead of a generic boilerplate.
+// Per-crop alt text for the 11 song-notation images. Wording follows the
+// pattern set in the polish handoff: "Florence Merriam Bailey's 1889
+// transcription of the <bird>'s <syllabic phrase>, beneath the inline
+// music notation." Sourced from gallery-quotes.md / MANIFEST.md.
 const SONG_ALT = {
-  "american-goldfinch_dee-ree.png":
-    "Bailey's notation of the American Goldfinch flight call: 'dee-ree, dee-ee-ree,' the rolling syllables a goldfinch sings in undulating flight, from the 1893 edition.",
   "wood-pewee_come-to-me.png":
-    "Bailey's notation of the Wood Pewee's plaintive 'come to me' phrase, three notes sliding down to a long lower note, from the 1893 edition.",
+    'Florence Merriam Bailey\'s 1889 transcription of the Wood Pewee\'s "come to me" song phrase, with the phonetic syllables beneath the inline music notation.',
   "wood-pewee_u-of-sound.png":
-    "Bailey's notation of the Wood Pewee's descending 'U of sound' pattern, two notes that drop and curve back up like a U-shaped sigh, from the 1893 edition.",
+    'Florence Merriam Bailey\'s 1889 transcription of the Wood Pewee\'s descending "U of sound" song pattern, beneath the inline music notation.',
   "wood-pewee_dear-ie.png":
-    "Bailey's notation of the Wood Pewee's tender, motherly 'dear-ie, dear-ie, dear,' three paired notes on a hushed cadence, from the 1893 edition.",
+    'Florence Merriam Bailey\'s 1889 transcription of the Wood Pewee\'s "dear-ie dear-ie dear" song variant, three pairs of syllables beneath the inline music notation.',
+  "american-goldfinch_dee-ree.png":
+    'Florence Merriam Bailey\'s 1889 transcription of the American Goldfinch\'s flight call as "dee-ree, dee-ee-ree," beneath the inline music notation.',
   "white-throated-sparrow_pea-bod-dy.png":
-    "Bailey's notation of the White-Throated Sparrow's clear spring whistle: two variations of 'I-I-pea-bod-dy, pea-bod-dy, pea-bod-dy,' the New England 'peabody' song, from the 1893 edition.",
+    'Florence Merriam Bailey\'s 1889 transcription of the White-Throated Sparrow\'s song with two variations of "I-I-pea-bod-dy," beneath the inline music notation.',
   "ovenbird_teach-er-crescendo.png":
-    "Bailey's notation of the Ovenbird's escalating 'teach-er, teach-er, teach-er, teach-er, teacher,' marked with a crescendo line as the call beats louder and faster toward the end, from the 1893 edition.",
+    'Florence Merriam Bailey\'s 1889 transcription of the Ovenbird\'s crescendo song as "teach-er teach-er teach-er teach-er teacher," beneath the inline music notation.',
   "white-crowned-sparrow_whe-he-hee.png":
-    "Bailey's notation of the White-Crowned Sparrow's low, plain song: 'whe-he-he-he-hee-hö,' six descending syllables, from the 1893 edition.",
+    'Florence Merriam Bailey\'s 1889 transcription of the White-Crowned Sparrow\'s song as "whe-he-he-he-hee-hö," beneath the inline music notation.',
   "american-redstart_te-ka-teek.png":
-    "Bailey's notation of the American Redstart's hurried trill: 'Te-ka-te-ka-te-ka-te-ka-teek,' four staccato pairs accented on the final syllable, from the 1893 edition.",
+    'Florence Merriam Bailey\'s 1889 transcription of the American Redstart\'s song as "Te-ka-te-ka-te-ka-te-ka-teek\'," beneath the inline music notation.',
   "black-throated-blue-warbler_z-ie.png":
-    "Bailey's notation of the Black-Throated Blue Warbler's guttural 'z-ie' call, a buzzy two-note phrase Bailey transcribed mid-sentence, from the 1893 edition.",
+    'Florence Merriam Bailey\'s 1889 transcription of the Black-Throated Blue Warbler\'s "z-ie" guttural call, beneath the inline music notation.',
   "hermit-thrush_main-song.png":
-    "Bailey's notation of the Hermit Thrush's main song: a three-part phrase descending the scale with mid-phrase trills, the central trill marked here, from the 1893 edition.",
+    "Florence Merriam Bailey's 1889 transcription of the Hermit Thrush's three-part main song with mid-phrase trills, beneath the inline music notation.",
   "hermit-thrush_variation.png":
-    "Bailey's notation of a Hermit Thrush variation in broken-song form: 'ah-re oo-oo,' a softer alternate phrase, from the 1893 edition.",
+    'Florence Merriam Bailey\'s 1889 transcription of a Hermit Thrush song variation as "ah re oo-oo," in broken-song form, beneath the inline music notation.',
 };
 
 // Inline song-notation markers `[[SONG:filename]]` placed in chapters.json
