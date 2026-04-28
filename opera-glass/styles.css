@@ -816,16 +816,33 @@ html.dark .chapter-glossary-footer a:hover {
    scrub / volume controls in ~40-50px of vertical space, with no
    iframe scrolling and a UI that adapts cleanly to dark/light themes
    on every browser. preload="none" avoids any network cost until the
-   reader clicks play. Attribution to Macaulay Library is rendered
-   manually in the figcaption. */
+   reader clicks play. The xeno-canto widget renders its own license,
+   recordist, and location attribution inside the iframe; the figcaption
+   adds the editorial framing (Bailey's phrase + curatorial caption). */
 .audio-embed {
   margin: 0.75rem auto 1.5rem;
   max-width: 36rem;
   text-align: center;
 }
-.audio-embed audio {
+.audio-embed iframe {
   display: block;
+  /* xeno-canto's widget renders at a fixed natural width (~340px)
+     regardless of the iframe size — anything wider leaves the widget
+     left-justified with empty whitespace on the right. We cap the
+     iframe at the widget's natural width and center it inside the
+     figure (margin: auto). */
   width: 100%;
+  max-width: 360px;
+  margin: 0 auto;
+  /* xeno-canto's embed renders six rows of content (logo + license
+     icons, spectrogram thumbnail, play controls + progress bar, species
+     title, recordist, location). At 340px natural width that's ~210px.
+     Reserve 220px so nothing scrolls internally and every control stays
+     reachable without needing to scroll the iframe. */
+  height: 220px;
+  border: 1px solid var(--color-rule);
+  border-radius: 3px;
+  background: var(--color-bg-alt);
 }
 .audio-embed figcaption {
   margin-top: 0.5rem;
@@ -843,17 +860,17 @@ html.dark .chapter-glossary-footer a:hover {
   text-decoration: underline dotted var(--color-accent);
   text-underline-offset: 0.15em;
 }
-.audio-embed figcaption {
-  margin-top: 0.5rem;
-  font-size: 0.85rem;
-  color: var(--color-ink-soft);
-  line-height: 1.45;
-  text-align: center;
+.audio-embed .audio-location {
+  font-style: italic;
+  white-space: normal;
 }
-.audio-embed figcaption a {
-  color: inherit;
-  text-decoration: underline dotted var(--color-accent);
-  text-underline-offset: 0.15em;
+@media (max-width: 480px) {
+  .audio-embed iframe {
+    /* Phone widths: location and title lines sometimes wrap to two
+       lines, so give the iframe extra vertical room to keep everything
+       visible without internal scrolling. */
+    height: 260px;
+  }
 }
 
 /* ------------------------------------------------------------------ */

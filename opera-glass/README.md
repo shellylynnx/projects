@@ -29,10 +29,17 @@ The original 1889 text is delivered untouched. Layered on top, this edition
 adds:
 
 - **Audio for every song notation.** All eleven of Bailey's transcribed bird
-  songs are paired with a modern Macaulay Library recording, rendered as a
-  native HTML5 player inline in the chapter. Per-recording recordist credit
-  is in the caption; site-level credit to the Macaulay Library at the Cornell
-  Lab of Ornithology is in the footer.
+  songs are paired with a modern recording from
+  [xeno-canto](https://xeno-canto.org/), rendered inline via xeno-canto's
+  embed widget. Picks are curated for audio cleanliness first (no ambient
+  distractions, dawn recordings where the bird sings the most variants,
+  recognized field-recordists like Andrew Spencer and Christopher
+  McPherson) with eastern-US locations preferred but not required. The
+  Wood-Pewee twilight song variant Bailey transcribed (which Wallace
+  Craig later formally documented in *The Auk*, 1926) is paired with the
+  only quality:A recording on xeno-canto explicitly tagged as a twilight
+  song, recorded at dawn 5:00 AM. Recordings are Creative Commons
+  licensed; xeno-canto's widget renders recordist attribution inline.
 - **Annotation glosses.** Underlined terms in the prose (period vocabulary,
   the naturalists Bailey cites, journals she draws from) carry hover/tap
   tooltips. Fifty-two entries across eight categories (vocabulary,
@@ -64,7 +71,7 @@ opera-glass/
   data/
     chapters.json         # 70 chapter entries with text + asset refs
     metadata.json         # book-level metadata
-    audio-embeds.json     # 11 Macaulay Library asset IDs paired with song notations
+    audio-embeds.json     # 11 xeno-canto recording IDs paired with song notations
     references.json       # 52 annotation glosses (term, type, modern, note, aliases)
     modern-accounts.json  # eBird/Cornell/Audubon/Wikipedia/Macaulay links per species
   assets/
@@ -103,10 +110,10 @@ notations) is hand-curated and lives at the top of the file.
 - Code: [MIT](LICENSE)
 - Bailey's text and the original illustrations: public domain in the U.S.
   Source scan: [Internet Archive](https://archive.org/details/birdsthroughano00bailgoog).
-- Audio: embedded under the
-  [Macaulay Library](https://macaulaylibrary.org/) at the Cornell Lab of
-  Ornithology's standard non-commercial use terms; recordist credited
-  per recording.
+- Audio: embedded from [xeno-canto](https://xeno-canto.org/). Individual
+  recordings are CC-licensed (typically CC-BY-NC-SA 4.0 or CC-BY-SA 4.0);
+  recordist attribution is rendered automatically by xeno-canto's embed
+  widget and duplicated in the figcaption.
 
 ## Credits
 

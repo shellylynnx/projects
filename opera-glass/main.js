@@ -297,12 +297,24 @@ const SONG_ALT = {
 // Inline song-notation markers `[[SONG:filename]]` placed in chapters.json
 // where Bailey originally set the music notation in the book. Each marker
 // gets replaced with a small inline figure that breaks out of the
-// surrounding paragraph flow visually. If a Macaulay audio embed has been
-// curated for this notation (data/audio-embeds.json), an iframe with the
-// modern recording renders below the notation image — lazy-loaded via
-// `loading="lazy"` plus an IntersectionObserver that defers iframe
-// insertion until the notation scrolls near the viewport. Runs AFTER
-// escapeHtml so we can safely emit raw HTML.
+// surrounding paragraph flow visually. If an audio embed has been
+// curated for this notation (data/audio-embeds.json), a xeno-canto
+// iframe with a modern recording renders below the notation image —
+// lazy-loaded via native `loading="lazy"` on the iframe.
+//
+// Why xeno-canto and not Macaulay: Cornell's media CDN at
+// `cdn.download.ams.birds.cornell.edu` does not permit cross-origin
+// requests from `shellylynnx.github.io` — the previous native <audio>
+// implementation showed controls but clicking play did nothing because
+// the browser blocked the cross-origin media request. xeno-canto's
+// embed widget runs the audio inside their own iframe (no CORS issue,
+// since the request originates from xeno-canto's domain), and their
+// recordings are CC-licensed with attribution rendered automatically by
+// the widget. Many of the picks are also geographically aligned with
+// Bailey's actual fieldwork sites in Hampshire County, MA (Smith
+// College) and Westchester / Chautauqua County, NY.
+//
+// Runs AFTER escapeHtml so we can safely emit raw HTML.
 function inlineSongNotations(escapedHtml) {
   return escapedHtml.replace(
     /\[\[SONG:([^\]]+)\]\]/g,
@@ -313,33 +325,42 @@ function inlineSongNotations(escapedHtml) {
         "Florence Merriam Bailey's transcription of the bird's song with phonetic lyrics, from the 1893 edition.";
       const safeAlt = escapeHtml(alt);
       // The song-notation IMAGE renders inline where Bailey set it.
-      // The paired Macaulay recording renders as a native HTML5 <audio>
-      // element pointing directly at Cornell's media CDN — compact, all
-      // controls visible always, no iframe-scrolling weirdness. We
-      // render the attribution Macaulay's embed widget would otherwise
-      // auto-render: recordist + asset ID + Macaulay Library link.
       let html = `</p><figure class="chapter-song-inline"><img src="./assets/songs/${safe}" alt="${safeAlt}" loading="lazy" /></figure>`;
       const audio = audioBySong.get(filename);
       if (audio) {
-        const safeAssetId = String(audio.macaulayAssetId).replace(/[^0-9]/g, "");
+        // Strip the "XC" prefix to build embed/recording URLs (data
+        // stores the prefixed form for human readability).
+        const xcId = String(audio.xenoCantoId || "").replace(/^XC/i, "");
+        const embedUrl = audio.embedURL || `https://xeno-canto.org/${xcId}/embed`;
+        const recordingUrl = audio.recordingURL || `https://xeno-canto.org/${xcId}`;
+        const safeEmbedUrl = escapeHtml(embedUrl);
+        const safeRecordingUrl = escapeHtml(recordingUrl);
         const safeRecordist = escapeHtml(audio.recordist || "");
+        const safeLocation = escapeHtml(audio.location || "");
         const safeCaption = escapeHtml(audio.caption || "");
-        const assetPageUrl = escapeHtml(
-          audio.macaulayURL || `https://macaulaylibrary.org/asset/${safeAssetId}`
-        );
-        const audioSrc = `https://cdn.download.ams.birds.cornell.edu/api/v1/asset/${safeAssetId}/audio`;
         const safePhrase = escapeHtml(audio.baileyPhrase || "");
+        const safeSpecies = escapeHtml(audio.species || "");
+        const safeId = escapeHtml(audio.xenoCantoId || `XC${xcId}`);
+        // The xeno-canto widget renders its own license, recordist,
+        // location, and play controls inside the iframe. Our figcaption
+        // adds the editorial framing (Bailey's phrase + curatorial
+        // caption) and a duplicated recordist/location line for
+        // accessibility tools and users with iframe blockers.
         html += `<figure class="audio-embed">
-  <audio controls preload="none" src="${escapeHtml(audioSrc)}">
-    Your browser does not support audio playback.
-    <a href="${assetPageUrl}" target="_blank" rel="noopener">Listen at Macaulay Library</a>.
-  </audio>
+  <iframe
+    src="${safeEmbedUrl}"
+    width="100%"
+    height="220"
+    frameborder="0"
+    loading="lazy"
+    title="${safeSpecies} song recording — ${safePhrase} — from xeno-canto ${safeId}"
+  ></iframe>
   <figcaption>
     ${safePhrase ? `<strong>&ldquo;${safePhrase}&rdquo;</strong> &middot; ` : ""}
-    Modern recording by <a href="${assetPageUrl}" target="_blank" rel="noopener">${safeRecordist}</a>
-    via <a href="https://macaulaylibrary.org" target="_blank" rel="noopener">Macaulay Library</a>
-    (ML${safeAssetId})
-    &mdash; ${safeCaption}
+    Modern recording by <a href="${safeRecordingUrl}" target="_blank" rel="noopener">${safeRecordist}</a>
+    via <a href="https://xeno-canto.org" target="_blank" rel="noopener">xeno-canto</a>
+    ${safeLocation ? `<span class="audio-location">(${safeLocation})</span>` : ""}
+    &middot; ${safeCaption}
   </figcaption>
 </figure>`;
       }
