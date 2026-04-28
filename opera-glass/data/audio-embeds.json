@@ -1,0 +1,128 @@
+{
+  "_comment": "Macaulay Library audio recordings for the 11 song notations Bailey transcribed. Each entry pairs a notation crop with a Macaulay asset that matches Bailey's specific phrase where possible. Source: each pick is from the curated Cornell All About Birds 'Sounds' page for the species (which lists Macaulay's editorially-selected recordings). Embedding terms are Macaulay's standard non-commercial allowance — no prior permission required for shellylynnx.github.io hosting. See 'Opera Glass v2' brainstorm in Notion for license context.",
+  "_audited": "2026-04-27",
+  "_embedPattern": "Use Macaulay's official embed widget (the iframe code from each asset's 'Embed' button), not direct-linked MP3s. Lazy-load via IntersectionObserver to keep chapter pages fast.",
+  "embeds": [
+    {
+      "notationFile": "wood-pewee_come-to-me.png",
+      "species": "Eastern Wood-Pewee",
+      "ebirdCode": "eawpew",
+      "baileyPhrase": "come to me",
+      "macaulayAssetId": "166766961",
+      "macaulayURL": "https://macaulaylibrary.org/audio/166766961",
+      "recordist": "Christopher McPherson",
+      "selectionRationale": "Cornell's primary featured 'song' recording; clean clear phrase typical of Bailey's day-song description.",
+      "caption": "Modern recording of the Eastern Wood-Pewee's typical day song for comparison with Bailey's transcription."
+    },
+    {
+      "notationFile": "wood-pewee_u-of-sound.png",
+      "species": "Eastern Wood-Pewee",
+      "ebirdCode": "eawpew",
+      "baileyPhrase": "descending U of sound",
+      "macaulayAssetId": "104109801",
+      "macaulayURL": "https://macaulaylibrary.org/audio/104109801",
+      "recordist": "Hal Mitchell",
+      "selectionRationale": "Captures the descending-glissando whistle phrase Bailey illustrated; second-listed song recording on Cornell ABA.",
+      "caption": "Modern recording showing the descending whistle pattern Bailey notated as a 'U of sound.'"
+    },
+    {
+      "notationFile": "wood-pewee_dear-ie.png",
+      "species": "Eastern Wood-Pewee",
+      "ebirdCode": "eawpew",
+      "baileyPhrase": "dear-ie dear-ie dear",
+      "macaulayAssetId": "168032961",
+      "macaulayURL": "https://macaulaylibrary.org/audio/168032961",
+      "recordist": "Wil Hershberger",
+      "selectionRationale": "Captures repeated three-pair phrase characteristic of the twilight song Bailey transcribed; matches the variant Wallace Craig later formally documented in 1926. If a more specifically-labeled 'twilight song' or 'dawn song' recording exists in the Macaulay catalog, prefer that.",
+      "caption": "Modern recording showing the three-pair 'dear-ie' phrase Bailey notated as part of the Wood Pewee's twilight song. Wallace Craig documented this same song variant 37 years later in 'The Auk' (1926)."
+    },
+    {
+      "notationFile": "american-goldfinch_dee-ree.png",
+      "species": "American Goldfinch",
+      "ebirdCode": "amegfi",
+      "baileyPhrase": "dee-ree, dee-ee-ree",
+      "macaulayAssetId": "251971631",
+      "macaulayURL": "https://macaulaylibrary.org/asset/251971631",
+      "recordist": "Jay McGowan",
+      "selectionRationale": "Modern eBird-era 'Flight Call' recording (catalog ID > 100M, post-2020 era — typically clean field recordings without the older Macaulay narrator voice-overs). Onondaga NY — Bailey's New York territory. Exact behavior match for Bailey's 'dee-ree, dee-ee-ree' transcription, which is the goldfinch's undulating-flight call. Replaces 27018301 (older catalog) and earlier 539588 (Blue Jay in background).",
+      "caption": "Modern recording of the American Goldfinch flight call, the 'dee-ree' Bailey transcribed."
+    },
+    {
+      "notationFile": "white-throated-sparrow_pea-bod-dy.png",
+      "species": "White-throated Sparrow",
+      "ebirdCode": "whtspa",
+      "baileyPhrase": "I-I-pea-bod-dy",
+      "macaulayAssetId": "120334251",
+      "macaulayURL": "https://macaulaylibrary.org/audio/120334251",
+      "recordist": "Jocelyn Lauzon",
+      "selectionRationale": "Cornell's primary 'song' recording; clean modern capture of the song mnemonized today as 'Old Sam Peabody, Peabody, Peabody' — Bailey heard the same phrase in 1889 as 'I-I-pea-bod-dy.'",
+      "caption": "Modern recording of the White-throated Sparrow's song. Today's birders mnemonize it as 'Old Sam Peabody, Peabody, Peabody'; Bailey heard the same phrase in 1889 as 'I-I-pea-bod-dy.'"
+    },
+    {
+      "notationFile": "ovenbird_teach-er-crescendo.png",
+      "species": "Ovenbird",
+      "ebirdCode": "ovenbi1",
+      "baileyPhrase": "teach-er teach-er teach-er teach-er teacher",
+      "macaulayAssetId": "230526491",
+      "macaulayURL": "https://macaulaylibrary.org/asset/230526491",
+      "recordist": "Andrew Spencer",
+      "selectionRationale": "5.0-rated Macaulay 'Song' recording (no narrator); Cattaraugus, NY — close to Bailey's New York / Massachusetts territory. Replaces 107318 (older recording with human announcer voice on intro).",
+      "caption": "Modern recording of the Ovenbird's escalating 'teach-er teach-er' song for comparison with Bailey's transcription."
+    },
+    {
+      "notationFile": "white-crowned-sparrow_whe-he-hee.png",
+      "species": "White-crowned Sparrow",
+      "ebirdCode": "whcspa",
+      "baileyPhrase": "whe-he-he-he-hee-hö",
+      "macaulayAssetId": "336555891",
+      "macaulayURL": "https://macaulaylibrary.org/asset/336555891",
+      "recordist": "Magdalena Zofia Plonka",
+      "selectionRationale": "Modern eBird-era 'Song' recording (catalog ID > 100M, post-2020 era — typically clean field recordings without the older Macaulay narrator voice-overs), 4.83-rated, Ontario (Eastern subspecies, close to Bailey's New York / Massachusetts territory). Replaces 78304321 (older catalog) and earlier 66708 (narrator on intro).",
+      "caption": "Modern recording of the White-Crowned Sparrow's whistled song for comparison with Bailey's 'whe-he-he-he-hee-hö' transcription."
+    },
+    {
+      "notationFile": "american-redstart_te-ka-teek.png",
+      "species": "American Redstart",
+      "ebirdCode": "amered",
+      "baileyPhrase": "Te-ka-te-ka-te-ka-te-ka-teek'",
+      "macaulayAssetId": "159954641",
+      "macaulayURL": "https://macaulaylibrary.org/audio/159954641",
+      "recordist": "Luciana Andrade",
+      "selectionRationale": "Cornell's primary 'song' recording; captures the explosive accented phrase Bailey transcribed as 'Te-ka-te-ka' ending with the accented 'teek.'",
+      "caption": "Modern recording of the American Redstart's song, matching Bailey's 1889 transcription of 'Te-ka-te-ka-te-ka-te-ka-teek.'"
+    },
+    {
+      "notationFile": "black-throated-blue-warbler_z-ie.png",
+      "species": "Black-throated Blue Warbler",
+      "ebirdCode": "btbwar",
+      "baileyPhrase": "z-ie (guttural)",
+      "macaulayAssetId": "244821181",
+      "macaulayURL": "https://macaulaylibrary.org/asset/244821181",
+      "recordist": "Chris Wood",
+      "selectionRationale": "5.0-rated modern eBird-era recording (catalog ID > 100M, post-2020 era — these are typically clean field recordings without the older Macaulay narrator voice-overs). Tompkins NY (Bailey territory). Replaces 140091 which still had a narrator.",
+      "caption": "Modern recording of the Black-Throated Blue Warbler's buzzy song for comparison with Bailey's 'z-ie' transcription."
+    },
+    {
+      "notationFile": "hermit-thrush_main-song.png",
+      "species": "Hermit Thrush",
+      "ebirdCode": "herthr",
+      "baileyPhrase": "three-part main song with mid-phrase trills",
+      "macaulayAssetId": "250159221",
+      "macaulayURL": "https://macaulaylibrary.org/asset/250159221",
+      "recordist": "Matthew D. Medler",
+      "selectionRationale": "5.0-rated modern eBird-era recording (catalog ID > 100M, post-2020 era — typically clean field recordings without the older Macaulay narrator voice-overs). Clinton NY (Bailey's Adirondack territory). Three-part song with the mid-phrase trill Bailey transcribed. Replaces 100856 which still had a narrator.",
+      "caption": "Modern recording of the Hermit Thrush's three-part main song with mid-phrase trill — what Bailey transcribed."
+    },
+    {
+      "notationFile": "hermit-thrush_variation.png",
+      "species": "Hermit Thrush",
+      "ebirdCode": "herthr",
+      "baileyPhrase": "ah re oo-oo (broken-song variation)",
+      "macaulayAssetId": "247555181",
+      "macaulayURL": "https://macaulaylibrary.org/audio/247555181",
+      "recordist": "Rose Ann Rowlett",
+      "selectionRationale": "Alternate Cornell-listed recording showing song variation; captures the broken-form variant Bailey illustrated as 'ah re oo-oo.' If a more specifically broken-song recording surfaces in the Macaulay catalog, prefer that.",
+      "caption": "Modern recording of a Hermit Thrush song variation, capturing the broken-form 'ah re oo-oo' phrase Bailey illustrated as a song variant."
+    }
+  ]
+}

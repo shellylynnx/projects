@@ -1,0 +1,335 @@
+{
+  "_comment": "Period references in 'Birds Through an Opera Glass' (Bailey, 1889) that a 2026 reader needs glossed. Each entry: the term as it appears in Bailey's text, a category, the modern explanation, and a 1-2 sentence note. Used by the v2 Opera Glass reader to render hover/tap tooltips on body text. Initial pass drew from 12 chapters; expanded Apr 27 after a full sweep of the preface, Hints to Observers, and ~85% of the chapter pages (214 of 253 pages OCR'd). Coverage is now substantial; a small number of additional references may surface from un-OCR'd appendices.",
+  "_categories": {
+    "naturalist": "Period naturalist Bailey cites by surname (Mr. Burroughs, etc.). Mostly 19th-century American bird writers.",
+    "literary": "Allusions to authors, characters, or works (Shakespeare, Wordsworth, Lowell, Caliban, etc.).",
+    "fashion": "Charles Frederick Worth and the haute-couture references; Bailey uses these as shorthand for fashion convention, often with feminist subtext.",
+    "phrase": "Latin or foreign-language phrases (Te Deum, etc.).",
+    "vocabulary": "Period English words that have shifted meaning or fallen out of use (stub, punkies, etc.).",
+    "publication": "Period magazines and journals Bailey cites by name (The American Naturalist, Audubon Magazine, etc.).",
+    "historical": "Historical, geographical, or political references (Mason-Dixon line, bloomers, etc.).",
+    "concept": "19th-century scientific or pedagogical concepts (Darwin's 'adaptation,' Bailey's 'pigeon-holes,' etc.)."
+  },
+  "_audited": "2026-04-27",
+  "references": [
+    {
+      "term": "Mr. Burroughs",
+      "type": "naturalist",
+      "modern": "John Burroughs (1837-1921)",
+      "note": "American naturalist and essayist whose nature writing made him one of the most-read authors of his era. Lived in the Catskills. Bailey would have read him from childhood; her brother C. Hart Merriam knew him personally."
+    },
+    {
+      "term": "Mr. Bicknell",
+      "type": "naturalist",
+      "modern": "Eugene Bicknell (1859-1925)",
+      "note": "New York ornithologist and Linnaean Society member. Bailey often cites Bicknell on bird vocalizations; his descriptions of the Wood Thrush and Hermit Thrush songs were considered authoritative in the 1880s."
+    },
+    {
+      "term": "Wilson",
+      "type": "naturalist",
+      "modern": "Alexander Wilson (1766-1813)",
+      "note": "Scottish-American ornithologist whose nine-volume 'American Ornithology' (1808-1814) is the foundational pre-Audubon work on American birds. Bailey treats his observations as canonical."
+    },
+    {
+      "term": "Audubon",
+      "type": "naturalist",
+      "modern": "John James Audubon (1785-1851)",
+      "note": "Author and illustrator of 'The Birds of America' (1827-1838) and 'Ornithological Biography' (1831-1839). The most famous American bird artist; Bailey cites his observational anecdotes throughout."
+    },
+    {
+      "term": "Mr. Darwin",
+      "type": "naturalist",
+      "modern": "Charles Darwin (1809-1882)",
+      "note": "English naturalist whose 'On the Origin of Species' (1859) introduced natural-selection theory. Bailey invokes 'adaptation' (Darwin's term) when discussing the bobolink's unusual coloration."
+    },
+    {
+      "term": "Mr. Colburn",
+      "type": "naturalist",
+      "modern": "W. A. Colburn (active 1880s)",
+      "note": "Contributor to Audubon Magazine in 1887 who compiled regional folk names for the Northern Flicker. Bailey cites his list of 36 vernacular names in the Yellow Hammer chapter."
+    },
+    {
+      "term": "Mr. Ingersoll",
+      "type": "naturalist",
+      "modern": "Ernest Ingersoll (1852-1946)",
+      "note": "American naturalist and writer. Bailey cites his etymological note that 'flicker' refers to the bird's distinctive undulating flight pattern."
+    },
+    {
+      "term": "Mr. Romeyn B. Hough",
+      "type": "naturalist",
+      "modern": "Romeyn Beck Hough (1857-1924)",
+      "note": "American botanist best known for 'The American Woods' (1888-1913), a multi-volume reference featuring actual wood-section samples. Bailey cites him for an anecdote about salt-loving crossbills."
+    },
+    {
+      "term": "Snug the joiner",
+      "type": "literary",
+      "modern": "Shakespeare's 'A Midsummer Night's Dream'",
+      "note": "Snug is the carpenter ('joiner') in the rude-mechanicals subplot who plays the Lion in the play-within-a-play and reassures the ladies he is no real lion. Bailey opens her preface with this image to disarm readers expecting a technical ornithological treatise."
+    },
+    {
+      "term": "Robert o' Lincoln",
+      "type": "literary",
+      "modern": "Bobolink (period nickname)",
+      "note": "A 19th-century anglicized rendering of the bobolink's bubbling song, popularized by William Cullen Bryant's 1855 poem 'Robert of Lincoln.' The bird's modern English name 'bobolink' is itself a contraction of this same onomatopoetic phrase."
+    },
+    {
+      "term": "Shelley",
+      "type": "literary",
+      "modern": "Percy Bysshe Shelley (1792-1822)",
+      "note": "English Romantic poet. Bailey quotes his 'To a Skylark' ('Thou dost float and run') to describe the meadowlark's labored flight."
+    },
+    {
+      "term": "Chaucer",
+      "type": "literary",
+      "modern": "Geoffrey Chaucer (c.1340-1400)",
+      "note": "English medieval poet. Bailey invokes his name (alongside Wordsworth) as a marker of the long tradition of poets who wrote about the daisy."
+    },
+    {
+      "term": "Wordsworth",
+      "type": "literary",
+      "modern": "William Wordsworth (1770-1850)",
+      "note": "English Romantic poet whose nature verse Bailey treats as a touchstone for the lyric tradition she's writing in conversation with."
+    },
+    {
+      "term": "Lowell",
+      "type": "literary",
+      "modern": "James Russell Lowell (1819-1891)",
+      "note": "American poet who coined 'Arthurian lances' for the spear-shaped tips of certain mosses (in his essay 'My Garden Acquaintance'). Bailey echoes the phrase when describing moss in the Hairy Woodpecker chapter."
+    },
+    {
+      "term": "Caliban",
+      "type": "literary",
+      "modern": "Shakespeare's 'The Tempest'",
+      "note": "The half-human creature on Prospero's island, frequently associated in the play with cramps and physical torment. Bailey uses 'as full of cramps as Caliban' in the Eastern Towhee chapter to describe crouching motionless to observe a wary bird."
+    },
+    {
+      "term": "fairy Guinevere",
+      "type": "literary",
+      "modern": "Arthurian legend",
+      "note": "Queen Guinevere, wife of King Arthur. In the Hairy Woodpecker chapter Bailey weaves a fairy-tale aside in which woodland creatures arm themselves with moss-spears for 'deeds of fairy valor' fit for an Arthurian queen."
+    },
+    {
+      "term": "Worth",
+      "type": "fashion",
+      "modern": "Charles Frederick Worth (1825-1895)",
+      "note": "English-born Paris couturier widely considered the founder of haute couture. By the 1880s 'Worth of Paris' was shorthand for the highest authority on women's fashion. Bailey uses 'the Worth of conventional bird circles' as gentle satire when describing the bobolink's defiance of bird-color convention."
+    },
+    {
+      "term": "bloomers",
+      "type": "fashion",
+      "modern": "Bloomer dress / women's reform clothing",
+      "note": "Wide trousers gathered at the ankle, popularized in the 1850s by Amelia Bloomer as part of the women's dress-reform movement. By 1889 'bloomers' was shorthand for women's rights and unconventional female dress; Bailey uses 'shades of short hair and bloomers' as a knowing wink in the Bobolink chapter."
+    },
+    {
+      "term": "Mason and Dixon's line",
+      "type": "historical",
+      "modern": "The 18th-century border between Pennsylvania and Maryland",
+      "note": "Originally a property-line survey (1763-1767) by astronomers Mason and Dixon; by the Civil War era it had become symbolic of the boundary between Northern and Southern states. Bailey uses it metaphorically in the Bobolink chapter to describe a territorial boundary between feuding birds."
+    },
+    {
+      "term": "Te Deum",
+      "type": "phrase",
+      "modern": "Latin Christian hymn",
+      "note": "'Te Deum laudamus' (We praise Thee, O God), an ancient Christian hymn of praise traditionally sung at vespers. Bailey describes the meadowlark's evening song as a 'fervid Te Deum,' invoking both its sustained melodic quality and its devotional feeling."
+    },
+    {
+      "term": "American Naturalist",
+      "type": "publication",
+      "modern": "The American Naturalist magazine (1867-present)",
+      "note": "American natural-history journal founded in 1867. Bailey cites it for anecdotal nest records throughout the book."
+    },
+    {
+      "term": "Audubon Magazine",
+      "type": "publication",
+      "modern": "Audubon Magazine (1887-1889)",
+      "note": "An early publication of the original Audubon Society (founded by George Bird Grinnell in 1886). Bailey cites the June 1887 issue specifically for Mr. Colburn's list of regional Northern Flicker names."
+    },
+    {
+      "term": "stub",
+      "type": "vocabulary",
+      "modern": "A snag — a dead, standing tree trunk",
+      "note": "Period American word for a dead, standing tree (or the broken stump of one). Still used by foresters; rare in casual speech today. Important in Bailey's text because so many of her birds are described perched on or nesting in stubs."
+    },
+    {
+      "term": "punkies",
+      "type": "vocabulary",
+      "modern": "Biting midges / no-see-ums",
+      "note": "Regional Northeast American term for tiny biting flies of the family Ceratopogonidae. Bailey uses it in the Ovenbird chapter when describing fieldwork hazards."
+    },
+    {
+      "term": "scudding",
+      "type": "vocabulary",
+      "modern": "Moving rapidly, especially at low height",
+      "note": "From the same root as 'scoot.' Bailey uses it for ovenbird nestlings darting away from a nest. Now archaic in everyday speech but still found in nautical and ornithological writing."
+    },
+    {
+      "term": "opera glass",
+      "type": "vocabulary",
+      "modern": "Small low-power binoculars",
+      "note": "A small, hand-held, low-magnification (typically 2-4x) optical instrument popular in the 19th century for viewing theatrical performances. Bailey's title argues that these everyday instruments are sufficient for amateur bird identification — her gentle counter-argument against the era's specimen-collecting orthodoxy. Modern field birders use 8-10x binoculars; the principle is unchanged."
+    },
+    {
+      "term": "pigeon-hole",
+      "type": "concept",
+      "modern": "Bailey's pedagogical bird-grouping system",
+      "note": "Bailey's self-coined term for the informal categorical groupings she uses throughout the book to help non-scientists organize bird identification. References like 'pigeon-hole No. 4' point to her own taxonomy laid out in the Hints to Observers section, distinct from the formal AOU taxonomy of her era."
+    },
+    {
+      "term": "adaptation",
+      "type": "concept",
+      "modern": "Darwinian natural selection",
+      "note": "By 'adaptation' Bailey means the Darwinian process by which heritable traits suit a species to its environment, language popularized by 'On the Origin of Species' (1859). She invokes the term sympathetically when explaining the Bobolink's unusual reverse-pattern coloration."
+    },
+    {
+      "term": "the German th",
+      "type": "phrase",
+      "modern": "The 'th' sound, absent in modern German",
+      "note": "Standard German has no native 'th' sound (the closest sounds are 's' or 'd' or 'z'). Bailey's quip about the Yellow Hammer's song being 'like the German th — he hasn't any' is a contemporary 1880s linguistic in-joke equating 'absent' with 'doesn't exist.'"
+    },
+    {
+      "term": "Madam Robin",
+      "type": "vocabulary",
+      "modern": "Period courtesy form for female birds",
+      "note": "Bailey often refers to female birds with 'Madam' (Madam Robin, Madam Partridge) and male birds with 'Mr.' (Mr. Goldfinch, Mr. Chewink). It's a pet rhetorical device — affectionate, slightly satirical, in line with the book's domestic-naturalism voice."
+    },
+    {
+      "term": "Paradise",
+      "type": "vocabulary",
+      "modern": "A wooded area at Smith College, Northampton, MA",
+      "note": "Bailey refers throughout the book to 'Paradise' as if it's a known place. It's the wooded area just behind the Smith College campus in Northampton, Massachusetts, named by students after Dante's Paradiso. Bailey did much of her undergraduate fieldwork there (1882-1886). She tells the reader directly in the preface footnote: 'My notes were made either at Northampton, Massachusetts, or Locust Grove, New York' — Paradise is the Northampton end of that pairing. Smith College's modern Paradise Pond preserves the name."
+    },
+    {
+      "term": "wood spirits",
+      "type": "literary",
+      "modern": "Mythological woodland creatures (sprites, dryads)",
+      "note": "Bailey occasionally invokes folkloric forest beings (wood spirits, fairies, sprites) as metaphor for the woodpecker's intuitive knowledge of trees. Part of the late-Victorian nature-mysticism sensibility she sometimes shades toward."
+    },
+    {
+      "term": "Voigtlander und Sohn",
+      "type": "vocabulary",
+      "modern": "Voigtländer & Son, the German optical-instruments firm (founded 1756)",
+      "note": "Bailey's preface specifies that her opera glass was made by Voigtländer und Sohn, the renowned Vienna-and-Braunschweig optical maker. By the 1880s Voigtländer was a premium brand for both opera glasses and early cameras. Bailey's casual product placement is itself a period detail — naming the maker the way a modern birder might mention 'Swarovski.'"
+    },
+    {
+      "term": "Baird, Brewer and Ridgway",
+      "type": "publication",
+      "modern": "Spencer Baird, Thomas Brewer, and Robert Ridgway",
+      "note": "Co-authors of 'A History of North American Birds' (1874), a three-volume Smithsonian work that was the standard scientific reference of Bailey's era. Bailey credits the book's illustrations as the source for her own and thanks Robert Ridgway for permission. All three authors were major figures: Baird was Smithsonian Secretary, Brewer a Boston naturalist, Ridgway the Smithsonian's Curator of Birds."
+    },
+    {
+      "term": "Robert Ridgway",
+      "type": "naturalist",
+      "modern": "Robert Ridgway (1850-1929)",
+      "note": "Curator of Birds at the Smithsonian Institution from 1880 onward. The most influential American taxonomic ornithologist of his generation; Bailey cites his 'Manual' (likely his 'A Manual of North American Birds,' 1887) as the next-step reference for serious students."
+    },
+    {
+      "term": "Spencer Baird",
+      "type": "naturalist",
+      "modern": "Spencer Fullerton Baird (1823-1887)",
+      "note": "Secretary of the Smithsonian Institution (1878-1887) and one of the founders of American systematic ornithology. Co-author of the History of North American Birds whose illustrations Bailey reproduced."
+    },
+    {
+      "term": "Thomas Brewer",
+      "type": "naturalist",
+      "modern": "Thomas Mayo Brewer (1814-1880)",
+      "note": "Boston-based naturalist, oologist (egg-collector and student), and physician. Co-author with Baird and Ridgway of the History of North American Birds."
+    },
+    {
+      "term": "Mr. Brewster",
+      "type": "naturalist",
+      "modern": "William Brewster (1851-1919)",
+      "note": "Massachusetts ornithologist and a founder of both the Nuttall Ornithological Club (1873) and the American Ornithologists' Union (1883). Curator of Birds at Harvard's Museum of Comparative Zoology. Bailey cites him on bird-call identification."
+    },
+    {
+      "term": "Mr. Allen",
+      "type": "naturalist",
+      "modern": "Joel Asaph Allen (1838-1921)",
+      "note": "Founding president of the American Ornithologists' Union (1883) and the first Curator of Birds at the American Museum of Natural History in New York. Bailey cites him on winter-bird observations."
+    },
+    {
+      "term": "Mr. William Hubbell Fisher",
+      "type": "naturalist",
+      "modern": "William Hubbell Fisher (1832-1916)",
+      "note": "Cincinnati lawyer and naturalist whose published bird observations Bailey cites. Active in late-19th-century Ohio ornithology."
+    },
+    {
+      "term": "Mrs. Treat",
+      "type": "naturalist",
+      "modern": "Mary Treat (1830-1923)",
+      "note": "Pioneering American naturalist, botanist, and entomologist; one of the few women publishing original natural-history research in Bailey's era. Lived in New Jersey; corresponded with Darwin and Asa Gray. Bailey cites her observation of great-crested flycatchers."
+    },
+    {
+      "term": "Mrs. Helen M. Bagg",
+      "type": "naturalist",
+      "modern": "Helen M. Bagg (mid-19th-century Northampton naturalist)",
+      "note": "A 'keen observer and botanist' (Bailey's phrase) in the Northampton, MA, community, likely a Smith College-area contact. Bailey acknowledges her gardens as field sites. Part of the network of women naturalists Bailey was actively building."
+    },
+    {
+      "term": "Thoreau",
+      "type": "literary",
+      "modern": "Henry David Thoreau (1817-1862)",
+      "note": "American naturalist-philosopher whose 'Walden' (1854) and journals were touchstones for Bailey's generation. She quotes him repeatedly on bird songs ('silver tinkling' for the chickadee's note, 'a-twitter' phrasings for various species), treating him as the lyric authority on northeastern bird vocalizations."
+    },
+    {
+      "term": "Emerson",
+      "type": "literary",
+      "modern": "Ralph Waldo Emerson (1803-1882)",
+      "note": "American transcendentalist essayist and poet. Bailey opens her chickadee chapter with 'Read Emerson's Titmouse and you will recognize this charming little bird,' invoking his 1862 poem 'The Titmouse' as the lyric portrait that does the species' description for her."
+    },
+    {
+      "term": "Longfellow",
+      "type": "literary",
+      "modern": "Henry Wadsworth Longfellow (1807-1882)",
+      "note": "Bailey quotes Longfellow within bird chapters. The most-read American poet of the 19th century; his presence in Bailey's text reflects the literary canon her readers would have shared."
+    },
+    {
+      "term": "Bryant",
+      "type": "literary",
+      "modern": "William Cullen Bryant (1794-1878)",
+      "note": "American poet whose 1855 'Robert of Lincoln' (about the bobolink) is the source for Bailey's repeated 'Robert o' Lincoln' phrasing. Also wrote 'To a Waterfowl' (1818), one of the best-known American bird poems. He edited the New York Evening Post for 50 years."
+    },
+    {
+      "term": "Nuttall",
+      "type": "naturalist",
+      "modern": "Thomas Nuttall (1786-1859)",
+      "note": "English-American naturalist whose 'A Manual of the Ornithology of the United States and of Canada' (1832-1834) was the first popular American bird guide. Bailey cites his anecdote of an oriole's polite behavior. Nuttall's name lives on in the Nuttall Ornithological Club, the oldest American bird-study organization."
+    },
+    {
+      "term": "Coues",
+      "type": "naturalist",
+      "modern": "Elliott Coues (1842-1899)",
+      "note": "Army surgeon, ornithologist, and AOU founder. His 'Key to North American Birds' (1872, multiple editions) was the foundational American taxonomic field key, used by every serious ornithologist of Bailey's generation."
+    },
+    {
+      "term": "Merriam",
+      "type": "naturalist",
+      "modern": "C. Hart Merriam (1855-1942) — Bailey's older brother",
+      "note": "Founder and first chief of what became the U.S. Biological Survey, founding member of the AOU (1883), and Florence's older brother. Bailey learned natural history alongside him at Locust Grove. When she names 'Merriam' without context, she usually means him."
+    },
+    {
+      "term": "Dante",
+      "type": "literary",
+      "modern": "Dante Alighieri (c.1265-1321) and the Divine Comedy",
+      "note": "Bailey writes that 'in Northampton follow Dante and see Paradise' — referring to a wooded area at Smith College that students had nicknamed Paradise after Dante's Paradiso, the third part of the Divine Comedy. The naming was a literary in-joke among the college community."
+    },
+    {
+      "term": "Locust Grove",
+      "type": "vocabulary",
+      "modern": "Bailey's family home in upstate New York",
+      "note": "The Merriam family estate in Lewis County, in the Black River Valley on the western edge of the Adirondacks. Bailey grew up there, returned often as an adult, and made many of the field observations in the book during her time there. When she writes 'here' in the chapters, she's usually pointing at Locust Grove."
+    },
+    {
+      "term": "Audubon Society",
+      "type": "historical",
+      "modern": "Original Audubon Society (founded 1886)",
+      "note": "George Bird Grinnell's 1886 organization, named after John James Audubon, formed in response to the women's-hat plumage trade. It collapsed by 1888 from being overwhelmed by membership demand. State chapters revived in the 1890s. Bailey was a charter member and helped found one of the earliest college chapters at Smith."
+    }
+  ],
+  "_todoForFullCoverage": [
+    "OCR the remaining appendix pages (~p.226-253) and scan for additional citations there — appendix style is more reference-heavy and may reveal additional naturalists Bailey credits.",
+    "Verify Mr. Colburn's first initial and dates (currently 'W. A. Colburn' is a guess — need to confirm against Audubon Magazine June 1887 issue).",
+    "Verify William Hubbell Fisher's biographical details — currently best guess.",
+    "Verify Mrs. Helen M. Bagg's biographical details — currently flagged as a Northampton naturalist but no specific dates found.",
+    "If a future Bailey scholar finds additional references, add them here."
+  ]
+}

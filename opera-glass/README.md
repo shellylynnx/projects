@@ -23,6 +23,30 @@ page per chapter with the text reflowed for the screen, the original
 illustrations placed where Bailey put them, and Bailey's hand-transcribed
 song notations rendered as inline crops.
 
+## Reading aids (v2)
+
+The original 1889 text is delivered untouched. Layered on top, this edition
+adds:
+
+- **Audio for every song notation.** All eleven of Bailey's transcribed bird
+  songs are paired with a modern Macaulay Library recording, rendered as a
+  native HTML5 player inline in the chapter. Per-recording recordist credit
+  is in the caption; site-level credit to the Macaulay Library at the Cornell
+  Lab of Ornithology is in the footer.
+- **Annotation glosses.** Underlined terms in the prose (period vocabulary,
+  the naturalists Bailey cites, journals she draws from) carry hover/tap
+  tooltips. Fifty-two entries across eight categories (vocabulary,
+  naturalist, literary, publication, fashion, historical, concept, phrase).
+- **Glossary index page** at `#/glossary`. Every annotated term in one
+  place, grouped by category, each linked to the chapter where it first
+  appears, so the glossary doubles as a way to navigate the book by topic.
+- **Modern accounts footer** on every species chapter, with links to
+  eBird, Cornell All About Birds, Audubon Field Guide, Wikipedia, and
+  Macaulay Library audio.
+- **Search** across all 70 chapters and 52 reference terms (`/` to focus).
+- **Reading progress** in `localStorage`. Visited chapters render muted in
+  the table of contents; a "Continue reading" link surfaces the last entry.
+
 ## How it's built
 
 - Plain HTML, plain CSS, one ES module of vanilla JavaScript.
@@ -40,7 +64,9 @@ opera-glass/
   data/
     chapters.json         # 70 chapter entries with text + asset refs
     metadata.json         # book-level metadata
-    vernacular.json       # empty stub for future name-aliases
+    audio-embeds.json     # 11 Macaulay Library asset IDs paired with song notations
+    references.json       # 52 annotation glosses (term, type, modern, note, aliases)
+    modern-accounts.json  # eBird/Cornell/Audubon/Wikipedia/Macaulay links per species
   assets/
     title-page.png        # 1893 title page
     illustrations/        # 16 species illustrations
@@ -77,6 +103,10 @@ notations) is hand-curated and lives at the top of the file.
 - Code: [MIT](LICENSE)
 - Bailey's text and the original illustrations: public domain in the U.S.
   Source scan: [Internet Archive](https://archive.org/details/birdsthroughano00bailgoog).
+- Audio: embedded under the
+  [Macaulay Library](https://macaulaylibrary.org/) at the Cornell Lab of
+  Ornithology's standard non-commercial use terms; recordist credited
+  per recording.
 
 ## Credits
 

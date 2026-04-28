@@ -530,9 +530,12 @@ def clean_paragraphs(text: str) -> str:
             r"as\s+if\s+glad\s+it\s+was\s+done\.[\s\S]+?(?=\s+One\s+morning)",
             "as if glad it was done. [[SONG:american-redstart_te-ka-teek.png]]",
         ),
-        # white-crowned-sparrow: whe-he-hee between "something like —" and end of paragraph
+        # white-crowned-sparrow: whe-he-hee between "something like —" and the
+        # end of the chapter. The chapter ends right after the song lyrics,
+        # so we consume all the way to \Z. Earlier version stopped at the
+        # first blank line, which left trailing phonetic garble in the body.
         (
-            r"something\s+like\s+—[\s\S]+?(?=\n\s*\n|\Z)",
+            r"something\s+like\s+—[\s\S]+\Z",
             "something like — [[SONG:white-crowned-sparrow_whe-he-hee.png]]",
         ),
         # black-throated-blue-warbler: z-ie embedded inside "their z-<e guttural a / as

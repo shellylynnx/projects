@@ -93,6 +93,17 @@ img {
   z-index: 100;
 }
 
+/* <main> has tabindex="-1" so it can receive programmatic focus after
+   each chapter render (lets screen readers announce the new content
+   instead of staying anchored to the topbar). It's a landmark, not an
+   interactive element, so we suppress focus rings entirely. tabindex=-1
+   already keeps it out of the keyboard tab order, and inner links and
+   buttons handle their own focus indication. */
+main:focus,
+main:focus-visible {
+  outline: none;
+}
+
 /* ------------------------------------------------------------------ */
 /* Topbar                                                              */
 /* ------------------------------------------------------------------ */
@@ -588,6 +599,55 @@ body[data-view="supplement"] .chapter-body p {
   letter-spacing: 0.05em;
   align-self: center;
 }
+/* v2: glossary back-link row, sibling to the modern-accounts aside.
+   Sits below the chapter body (or below the modern-accounts aside on
+   species chapters) and above the prev/next nav. The anchor inside is
+   styled as a subtle bordered button — visible enough to read as a
+   discrete action without competing with the prev/next nav as a primary
+   destination. */
+.chapter-glossary-footer {
+  max-width: var(--max-text);
+  margin: 1.5rem auto 0;
+  text-align: left;
+}
+.chapter-glossary-footer a {
+  display: inline-block;
+  padding: 0.55rem 1rem;
+  border: 1px solid #8a2e22;
+  border-radius: 3px;
+  /* Saturated brick red, sits in the same warm family as the sepia
+     accent (#6e3a18) but pushes more red — distinct enough to read as
+     the primary "this digital edition adds" action. Cream text reverses
+     out cleanly against it. */
+  background: #9a3a2c;
+  color: var(--color-bg);
+  font-size: 0.9rem;
+  text-decoration: none;
+  line-height: 1.2;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.chapter-glossary-footer a:hover {
+  background: #7d2e21;
+  border-color: #5e2218;
+  color: var(--color-bg);
+}
+/* Dark mode swaps the brick red for an antique gold — same role
+   (primary action) but a hue that reads as warm and luxe against the
+   dark sepia page bg, where a saturated red can feel heavy. The text
+   color (var(--color-bg) = #14110d in dark mode) gives strong contrast
+   against gold without further tuning. */
+html.dark .chapter-glossary-footer a {
+  background: #c9a44c;
+  border-color: #a8862e;
+}
+html.dark .chapter-glossary-footer a:hover {
+  background: #d8b65e;
+  border-color: #c9a44c;
+}
+.chapter-glossary-footer a:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
 .chapter-nav-label {
   font-feature-settings: "smcp";
   font-variant: small-caps;
@@ -621,30 +681,22 @@ body[data-view="supplement"] .chapter-body p {
 }
 .sitefooter p:last-child {
   margin-bottom: 0;
-  /* Compress so the credit line fits without wrapping at the reading-column
-     max width on desktop. On phones we swap to a compact form (just the
-     three links separated by middots) so it still fits on one line. */
-  font-size: 0.78rem;
-  letter-spacing: -0.005em;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  /* Compact dot-separated credit line; long-form descriptions live in
+     each link's `title` tooltip (hover on desktop, long-press on mobile,
+     announced by screen readers). Wraps naturally at small widths
+     instead of needing a swap pattern. */
+  font-size: 0.82rem;
+  text-align: center;
 }
-.sitefooter-short {
-  display: none;
+.sitefooter-credit a {
+  /* The dotted underline subtly signals there's a tooltip with more
+     context — distinct from solid-underline editorial links elsewhere. */
+  text-decoration: none;
+  border-bottom: 1px dotted var(--color-rule);
 }
-@media (max-width: 540px) {
-  .sitefooter-long {
-    display: none;
-  }
-  .sitefooter-short {
-    display: inline;
-  }
-  .sitefooter p:last-child {
-    font-size: 0.82rem;
-    letter-spacing: 0;
-    text-align: center;
-  }
+.sitefooter-credit a:hover {
+  border-bottom-style: solid;
+  border-bottom-color: var(--color-ink);
 }
 
 .noscript {
@@ -756,13 +808,305 @@ body[data-view="supplement"] .chapter-body p {
 }
 
 /* ------------------------------------------------------------------ */
+/* v2: Macaulay audio embed (paired with each inline song notation)    */
+/* ------------------------------------------------------------------ */
+
+/* Audio embed: native HTML5 <audio> element pointing directly at the
+   Macaulay CDN. The browser's built-in player gives play / pause /
+   scrub / volume controls in ~40-50px of vertical space, with no
+   iframe scrolling and a UI that adapts cleanly to dark/light themes
+   on every browser. preload="none" avoids any network cost until the
+   reader clicks play. Attribution to Macaulay Library is rendered
+   manually in the figcaption. */
+.audio-embed {
+  margin: 0.75rem auto 1.5rem;
+  max-width: 36rem;
+  text-align: center;
+}
+.audio-embed audio {
+  display: block;
+  width: 100%;
+}
+.audio-embed figcaption {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--color-ink-soft);
+  line-height: 1.45;
+  text-align: center;
+}
+.audio-embed figcaption strong {
+  color: var(--color-ink);
+  font-weight: 600;
+}
+.audio-embed figcaption a {
+  color: inherit;
+  text-decoration: underline dotted var(--color-accent);
+  text-underline-offset: 0.15em;
+}
+.audio-embed figcaption {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--color-ink-soft);
+  line-height: 1.45;
+  text-align: center;
+}
+.audio-embed figcaption a {
+  color: inherit;
+  text-decoration: underline dotted var(--color-accent);
+  text-underline-offset: 0.15em;
+}
+
+/* ------------------------------------------------------------------ */
+/* v2: Reference gloss tooltips                                        */
+/* ------------------------------------------------------------------ */
+
+.glossed {
+  /* Subtle bottom underline so the term is discoverable but not loud.
+     Each category gets a different underline color (set below). */
+  border-bottom: 1px dotted currentColor;
+  cursor: help;
+  /* Don't break the body's hover-color or visited-color cascade. */
+  color: inherit;
+}
+.glossed:hover,
+.glossed:focus-visible {
+  background: rgba(110, 58, 24, 0.08);
+}
+html.dark .glossed:hover,
+html.dark .glossed:focus-visible {
+  background: rgba(227, 165, 116, 0.12);
+}
+
+/* Per-category underline tinting. Calm: just the underline color shifts
+   between naturalist (green), literary (warm), publication (slate), etc.
+   Reader can pattern-match the category at a glance without reading the
+   tooltip. */
+.glossed-naturalist  { border-bottom-color: #4f7d62; }
+.glossed-literary    { border-bottom-color: #8a6b3a; }
+.glossed-fashion     { border-bottom-color: #a45b6f; }
+.glossed-phrase      { border-bottom-color: #6b6b6b; }
+.glossed-vocabulary  { border-bottom-color: #6b6b6b; }
+.glossed-publication { border-bottom-color: #4a6b8a; }
+.glossed-historical  { border-bottom-color: #8a6b3a; }
+.glossed-concept     { border-bottom-color: #6b6b6b; }
+
+.gloss-tooltip {
+  position: absolute;
+  z-index: 50;
+  max-width: 22rem;
+  padding: 0.7rem 0.9rem;
+  background: var(--color-bg);
+  color: var(--color-ink);
+  border: 1px solid var(--color-rule);
+  border-left: 3px solid var(--color-rule);
+  border-radius: 4px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  pointer-events: auto;
+}
+.gloss-tooltip[hidden] { display: none; }
+.gloss-modern {
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+}
+.gloss-note {
+  color: var(--color-ink-soft);
+  font-size: 0.88rem;
+}
+.gloss-type {
+  margin-top: 0.45rem;
+  font-feature-settings: "smcp";
+  font-variant: small-caps;
+  letter-spacing: 0.05em;
+  font-size: 0.72rem;
+  color: var(--color-ink-soft);
+  opacity: 0.8;
+}
+.gloss-tooltip-naturalist  { border-left-color: #4f7d62; }
+.gloss-tooltip-literary    { border-left-color: #8a6b3a; }
+.gloss-tooltip-fashion     { border-left-color: #a45b6f; }
+.gloss-tooltip-publication { border-left-color: #4a6b8a; }
+.gloss-tooltip-historical  { border-left-color: #8a6b3a; }
+
+/* ------------------------------------------------------------------ */
+/* v2: Modern accounts footer per species chapter                      */
+/* ------------------------------------------------------------------ */
+
+.modern-accounts {
+  max-width: var(--max-text);
+  margin: 2.5rem auto 0;
+  padding: 1.5rem 0 0;
+  border-top: 1px solid var(--color-rule);
+}
+.modern-accounts h3 {
+  margin: 0 0 0.4rem;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--color-ink);
+  font-feature-settings: "smcp";
+  font-variant: small-caps;
+  letter-spacing: 0.04em;
+}
+.modern-accounts-modern {
+  margin: 0 0 0.8rem;
+  font-style: italic;
+  color: var(--color-ink-soft);
+  font-size: 0.95rem;
+}
+.modern-accounts ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+  font-size: 0.92rem;
+}
+.modern-accounts ul a {
+  color: var(--color-ink);
+  text-decoration: underline dotted var(--color-accent);
+  text-underline-offset: 0.18em;
+}
+.modern-accounts ul a:hover {
+  color: var(--color-accent);
+}
+
+/* ------------------------------------------------------------------ */
+/* v2: Search                                                          */
+/* ------------------------------------------------------------------ */
+
+.search-wrap {
+  position: relative;
+  max-width: var(--max-text);
+  margin: 1rem auto 0;
+  padding: 0 var(--pad);
+}
+.search-input {
+  width: 100%;
+  padding: 0.6rem 0.9rem;
+  background: var(--color-bg-alt);
+  color: var(--color-ink);
+  border: 1px solid var(--color-rule);
+  border-radius: 4px;
+  font-family: var(--font-serif);
+  font-size: 0.95rem;
+  appearance: none;
+  -webkit-appearance: none;
+}
+.search-input:focus {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
+}
+.search-results {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: var(--pad);
+  right: var(--pad);
+  z-index: 20;
+  list-style: none;
+  margin: 0;
+  padding: 0.3rem 0;
+  background: var(--color-bg);
+  border: 1px solid var(--color-rule);
+  border-radius: 4px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.16);
+  max-height: 60vh;
+  overflow-y: auto;
+}
+.search-results[hidden] { display: none; }
+.search-result a {
+  display: block;
+  padding: 0.55rem 0.9rem;
+  color: var(--color-ink);
+  text-decoration: none;
+  line-height: 1.45;
+}
+.search-result a:hover {
+  background: var(--color-bg-alt);
+}
+.search-result-roman {
+  display: inline-block;
+  margin-right: 0.4rem;
+  color: var(--color-ink-soft);
+  font-feature-settings: "smcp";
+  font-variant: small-caps;
+  letter-spacing: 0.04em;
+  font-size: 0.85rem;
+}
+.search-result-title {
+  font-weight: 500;
+}
+.search-result-snippet {
+  display: block;
+  margin-top: 0.2rem;
+  color: var(--color-ink-soft);
+  font-size: 0.85rem;
+  font-style: italic;
+}
+.search-result-empty {
+  padding: 0.7rem 0.9rem;
+  color: var(--color-ink-soft);
+  font-style: italic;
+  font-size: 0.9rem;
+}
+
+/* ------------------------------------------------------------------ */
+/* v2: Reading progress (continue-reading link + muted-read TOC rows)  */
+/* ------------------------------------------------------------------ */
+
+.continue-reading {
+  max-width: var(--max-text);
+  margin: 1.25rem auto 0;
+  padding: 0.7rem var(--pad);
+  text-align: center;
+  font-size: 0.95rem;
+  color: var(--color-ink-soft);
+}
+.continue-reading a {
+  color: var(--color-accent);
+  font-style: italic;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  margin: 0 0.25rem;
+}
+.progress-clear {
+  margin-left: 1rem;
+  background: none;
+  border: 0;
+  color: var(--color-ink-soft);
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-feature-settings: "smcp";
+  font-variant: small-caps;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  text-decoration: underline dotted;
+  padding: 0;
+}
+.progress-clear:hover {
+  color: var(--color-accent);
+}
+.toc-link.is-read .toc-title,
+.toc-link.is-read .toc-roman,
+.toc-link.is-read .toc-page {
+  color: var(--color-ink-soft);
+  opacity: 0.66;
+}
+
+/* ------------------------------------------------------------------ */
 /* Print                                                               */
 /* ------------------------------------------------------------------ */
 
 @media print {
   .topbar,
   .chapter-nav,
-  .skip-link {
+  .skip-link,
+  .search-wrap,
+  .continue-reading,
+  .audio-embed,
+  .gloss-tooltip {
     display: none;
   }
   body {
@@ -774,4 +1118,186 @@ body[data-view="supplement"] .chapter-body p {
   .sitefooter {
     max-width: none;
   }
+}
+
+/* ------------------------------------------------------------------ */
+/* v2: Glossary page (#/glossary)                                      */
+/* All annotated terms in one place, grouped by category, each linked  */
+/* to the chapter where it first appears.                              */
+/* ------------------------------------------------------------------ */
+
+/* Glossary mention inside the TOC intro prose. Inherits the intro's
+   typography (so it reads as a natural third paragraph), with a softly
+   tinted link so the glossary entry-point is visible without breaking
+   the editorial voice of the surrounding text. */
+.toc-intro-glossary {
+  /* matches sibling <p> inside .toc-intro — font, color, leading inherit */
+  margin-top: 1rem;
+}
+.toc-intro-glossary a {
+  color: var(--color-ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--color-rule);
+}
+.toc-intro-glossary a:hover {
+  border-bottom-color: var(--color-ink);
+}
+
+.glossary {
+  max-width: var(--max-text);
+  margin: 0 auto;
+  padding: 1rem 0 4rem;
+}
+.glossary-header {
+  margin-bottom: 2.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--color-rule);
+}
+.glossary-eyebrow {
+  margin: 0 0 0.5rem;
+  font-size: 0.9rem;
+}
+.glossary-eyebrow a {
+  color: var(--color-ink-soft);
+  text-decoration: none;
+}
+.glossary-eyebrow a:hover {
+  color: var(--color-ink);
+}
+.glossary-title {
+  font-family: var(--font-display);
+  font-size: 2.2rem;
+  margin: 0 0 0.6rem;
+  color: var(--color-ink);
+}
+.glossary-dek {
+  margin: 0 0 0.8rem;
+  color: var(--color-ink-soft);
+  font-size: 1rem;
+  line-height: 1.55;
+  max-width: 38rem;
+}
+.glossary-meta {
+  margin: 0;
+  color: var(--color-ink-soft);
+  font-size: 0.85rem;
+  font-feature-settings: "smcp";
+  font-variant: small-caps;
+  letter-spacing: 0.04em;
+}
+/* Count-strip chips link to each section. Color stays muted so the strip
+   reads as metadata, but underline-on-hover signals interactivity. */
+.glossary-meta a {
+  color: var(--color-ink-soft);
+  text-decoration: none;
+  border-bottom: 1px dotted var(--color-rule);
+}
+.glossary-meta a:hover {
+  color: var(--color-ink);
+  border-bottom-color: var(--color-ink);
+  border-bottom-style: solid;
+}
+
+.glossary-section {
+  margin: 2.5rem 0;
+  /* Sticky topbar (~3.2rem tall) would otherwise hide the section heading
+     when readers jump via the count-strip anchors. */
+  scroll-margin-top: 4rem;
+}
+.glossary-section-title {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--color-ink);
+  margin: 0 0 0.3rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 2px solid var(--color-rule);
+}
+.glossary-section-blurb {
+  margin: 0 0 1.5rem;
+  color: var(--color-ink-soft);
+  font-size: 0.95rem;
+  font-style: italic;
+}
+
+/* Section accent — left rule keyed to the same per-category color tokens
+   used by the inline gloss underlines and tooltip borders. Reader can
+   match a glossary section to the underline color they saw in prose. */
+.glossary-section-naturalist  .glossary-section-title { border-bottom-color: #4f7d62; }
+.glossary-section-literary    .glossary-section-title { border-bottom-color: #8a6b3a; }
+.glossary-section-fashion     .glossary-section-title { border-bottom-color: #a45b6f; }
+.glossary-section-publication .glossary-section-title { border-bottom-color: #4a6b8a; }
+.glossary-section-historical  .glossary-section-title { border-bottom-color: #8a6b3a; }
+.glossary-section-vocabulary  .glossary-section-title { border-bottom-color: #6b6b6b; }
+.glossary-section-phrase      .glossary-section-title { border-bottom-color: #6b6b6b; }
+.glossary-section-concept     .glossary-section-title { border-bottom-color: #6b6b6b; }
+
+.glossary-entries {
+  display: grid;
+  gap: 1.5rem;
+}
+.glossary-entry {
+  padding: 0.9rem 1rem 0.9rem 1.1rem;
+  border-left: 3px solid var(--color-rule);
+  background: rgba(0, 0, 0, 0.015);
+  border-radius: 2px;
+}
+html.dark .glossary-entry {
+  background: rgba(255, 255, 255, 0.025);
+}
+.glossary-entry-naturalist  { border-left-color: #4f7d62; }
+.glossary-entry-literary    { border-left-color: #8a6b3a; }
+.glossary-entry-fashion     { border-left-color: #a45b6f; }
+.glossary-entry-publication { border-left-color: #4a6b8a; }
+.glossary-entry-historical  { border-left-color: #8a6b3a; }
+.glossary-entry-vocabulary  { border-left-color: #6b6b6b; }
+.glossary-entry-phrase      { border-left-color: #6b6b6b; }
+.glossary-entry-concept     { border-left-color: #6b6b6b; }
+
+.glossary-term {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 0.2rem;
+  color: var(--color-ink);
+}
+.glossary-modern {
+  margin: 0 0 0.4rem;
+  font-style: italic;
+  color: var(--color-ink-soft);
+  font-size: 0.95rem;
+}
+.glossary-aliases {
+  margin: 0 0 0.4rem;
+  font-size: 0.85rem;
+  color: var(--color-ink-soft);
+}
+.glossary-note {
+  margin: 0 0 0.6rem;
+  color: var(--color-ink);
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+.glossary-appearance {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--color-ink-soft);
+}
+.glossary-appearance a {
+  color: var(--color-ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--color-rule);
+}
+.glossary-appearance a:hover {
+  border-bottom-color: var(--color-ink);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .glossary-entry:target {
+    animation: glossary-target-pulse 1.6s ease-out;
+  }
+}
+@keyframes glossary-target-pulse {
+  0%   { background: rgba(218, 165, 32, 0.18); }
+  100% { background: rgba(0, 0, 0, 0.015); }
 }
