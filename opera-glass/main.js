@@ -222,6 +222,35 @@ function paragraphsHtml(text, currentSlug) {
     .join("");
 }
 
+// Per-crop alt text for the 11 song-notation images. Sourced from
+// MANIFEST.md / gallery-quotes.md, each describing the syllabic phrase
+// Bailey transcribed so screen readers and search engines get a unique,
+// meaningful description per crop instead of a generic boilerplate.
+const SONG_ALT = {
+  "american-goldfinch_dee-ree.png":
+    "Bailey's notation of the American Goldfinch flight call: 'dee-ree, dee-ee-ree,' the rolling syllables a goldfinch sings in undulating flight, from the 1893 edition.",
+  "wood-pewee_come-to-me.png":
+    "Bailey's notation of the Wood Pewee's plaintive 'come to me' phrase, three notes sliding down to a long lower note, from the 1893 edition.",
+  "wood-pewee_u-of-sound.png":
+    "Bailey's notation of the Wood Pewee's descending 'U of sound' pattern, two notes that drop and curve back up like a U-shaped sigh, from the 1893 edition.",
+  "wood-pewee_dear-ie.png":
+    "Bailey's notation of the Wood Pewee's tender, motherly 'dear-ie, dear-ie, dear,' three paired notes on a hushed cadence, from the 1893 edition.",
+  "white-throated-sparrow_pea-bod-dy.png":
+    "Bailey's notation of the White-Throated Sparrow's clear spring whistle: two variations of 'I-I-pea-bod-dy, pea-bod-dy, pea-bod-dy,' the New England 'peabody' song, from the 1893 edition.",
+  "ovenbird_teach-er-crescendo.png":
+    "Bailey's notation of the Ovenbird's escalating 'teach-er, teach-er, teach-er, teach-er, teacher,' marked with a crescendo line as the call beats louder and faster toward the end, from the 1893 edition.",
+  "white-crowned-sparrow_whe-he-hee.png":
+    "Bailey's notation of the White-Crowned Sparrow's low, plain song: 'whe-he-he-he-hee-hö,' six descending syllables, from the 1893 edition.",
+  "american-redstart_te-ka-teek.png":
+    "Bailey's notation of the American Redstart's hurried trill: 'Te-ka-te-ka-te-ka-te-ka-teek,' four staccato pairs accented on the final syllable, from the 1893 edition.",
+  "black-throated-blue-warbler_z-ie.png":
+    "Bailey's notation of the Black-Throated Blue Warbler's guttural 'z-ie' call, a buzzy two-note phrase Bailey transcribed mid-sentence, from the 1893 edition.",
+  "hermit-thrush_main-song.png":
+    "Bailey's notation of the Hermit Thrush's main song: a three-part phrase descending the scale with mid-phrase trills, the central trill marked here, from the 1893 edition.",
+  "hermit-thrush_variation.png":
+    "Bailey's notation of a Hermit Thrush variation in broken-song form: 'ah-re oo-oo,' a softer alternate phrase, from the 1893 edition.",
+};
+
 // Inline song-notation markers `[[SONG:filename]]` placed in chapters.json
 // where Bailey originally set the music notation in the book. Each marker
 // gets replaced with a small inline figure that breaks out of the
@@ -232,7 +261,16 @@ function inlineSongNotations(escapedHtml) {
     /\[\[SONG:([^\]]+)\]\]/g,
     (_, filename) => {
       const safe = filename.replace(/"/g, "&quot;");
-      return `</p><figure class="chapter-song-inline"><img src="./assets/songs/${safe}" alt="Florence Merriam Bailey's transcription of the bird's song with phonetic lyrics, from the 1893 edition." loading="lazy" /></figure><p>`;
+      const alt =
+        SONG_ALT[filename] ||
+        "Florence Merriam Bailey's transcription of the bird's song with phonetic lyrics, from the 1893 edition.";
+      const safeAlt = alt
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+      return `</p><figure class="chapter-song-inline"><img src="./assets/songs/${safe}" alt="${safeAlt}" loading="lazy" /></figure><p>`;
     }
   );
 }
@@ -299,12 +337,22 @@ function renderTOC() {
 
   const chapterItems = chapters
     .map((c) => {
-      const aliases = c.title.includes(";")
-        ? `<em>${escapeHtml(c.title.split(";").slice(1).join(";").trim())}</em>`
-        : "";
       const primary = escapeHtml(primaryTitleOf(c));
       const dot = c.illustration
         ? '<span class="toc-illus-dot" aria-label="has illustration"></span>'
+        : "";
+      // Period vernacular aliases are rendered as a separate line BELOW the
+      // primary title (display: block via CSS), AND prefixed with a
+      // middle-dot separator that bakes the relationship into the markup.
+      // Two reasons to keep the dot even though CSS already breaks the line:
+      //   1. textContent (used by screen readers, web search, copy-paste)
+      //      reads "Primary · Alias" instead of "PrimaryAlias" jammed
+      //      together.
+      //   2. If the stylesheet fails or is overridden the names still don't
+      //      collide — they're separated by a visible character.
+      const aliasParts = c.title.split(";").slice(1).map((s) => s.trim()).filter(Boolean);
+      const aliases = aliasParts.length
+        ? `<span class="toc-alias"> · ${aliasParts.map((a) => escapeHtml(a)).join("; ")}</span>`
         : "";
       const page = c.bookPageStart ? `p. ${c.bookPageStart}` : "";
       return `
@@ -431,16 +479,21 @@ function renderEntry(entry) {
     }
   }
 
-  // Song notations (chapters only)
+  // Song notations (chapters only — fallback bottom block; in practice the
+  // markers in the body inline them and `entry.songNotations` is empty for
+  // those chapters). Uses the same per-crop alt text as the inline path.
   let songsHtml = "";
   if (entry.songNotations && entry.songNotations.length) {
     const items = entry.songNotations
-      .map(
-        (f) => `
+      .map((f) => {
+        const alt =
+          SONG_ALT[f] ||
+          "Florence Merriam Bailey's transcription of the bird's song with phonetic lyrics, from the 1893 edition.";
+        return `
         <figure class="chapter-song">
-          <img src="./assets/songs/${escapeHtml(f)}" alt="Florence Merriam Bailey's transcription of the bird's song with phonetic lyrics, from the 1893 edition." loading="lazy" />
-        </figure>`
-      )
+          <img src="./assets/songs/${escapeHtml(f)}" alt="${escapeHtml(alt)}" loading="lazy" />
+        </figure>`;
+      })
       .join("");
     songsHtml = `
       <section class="chapter-songs" aria-label="Song notation">

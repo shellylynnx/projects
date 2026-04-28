@@ -318,13 +318,17 @@ body[data-view="toc"] .topbar-home {
   font-size: 1.05rem;
   line-height: 1.4;
 }
-.toc-title em {
+.toc-title em,
+.toc-title .toc-alias {
   display: block;
   font-style: italic;
   color: var(--color-ink-soft);
   font-size: 0.9rem;
-  margin-top: 0.1rem;
+  margin-top: 0.15rem;
 }
+/* The alias is rendered with a leading " · " in the markup. On its own
+   line, the dot reads as a soft "also called" marker. In the worst-case
+   no-CSS / cached-CSS scenario it still separates the names cleanly. */
 .toc-page {
   flex-shrink: 0;
   color: var(--color-ink-soft);
