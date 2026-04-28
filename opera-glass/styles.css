@@ -1,0 +1,773 @@
+/* Birds Through an Opera Glass — interactive reader
+ * Mobile-first reading experience. Cream background, dark gray text,
+ * serif body (Charter / Iowan / Georgia stack), generous line-height.
+ * No build step, no framework — plain CSS in one file.
+ */
+
+:root {
+  /* Light (default) — Bailey's printed book aesthetic. Cream paper, dark
+     ink, warm sienna accent the colour of period bookcloth. */
+  --color-bg: #faf6ec;
+  --color-bg-alt: #f1ead7;
+  --color-ink: #2a2a2a;
+  --color-ink-soft: #5a5a5a;
+  --color-rule: #d8cfb6;
+  --color-accent: #6e3a18;
+  /* Image plate — keeps the white paper background of the etchings/notation
+     when the page itself goes dark. */
+  --color-plate-bg: #ffffff;
+  --color-plate-rule: #d8cfb6;
+  --font-serif: "Iowan Old Style", "Charter", "Georgia", "Cambria", "Times New Roman", serif;
+  --font-display: "Iowan Old Style", "Charter", "Georgia", "Times New Roman", serif;
+  --max-text: 38rem; /* ~640px reading column */
+  --pad: 1.25rem;
+}
+
+/* Dark theme — keyed to <html class="dark"> so the toggle script can apply
+   it before first paint without flashing. Mirrors shellylynnx.com's dark
+   palette (warm off-white text on a near-black warm background) and warms
+   the accent so it stays readable on dark. */
+html.dark {
+  --color-bg: #14110d;
+  --color-bg-alt: #211d17;
+  --color-ink: #e8e0d4;
+  --color-ink-soft: #b3a99a;
+  --color-rule: #36302a;
+  --color-accent: #e3a574;
+  --color-plate-bg: #ffffff; /* keep illustrations on white, like print */
+  --color-plate-rule: #36302a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-serif);
+  font-size: 1.125rem;
+  line-height: 1.65;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--color-accent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.15em;
+}
+a:hover {
+  text-decoration-thickness: 2px;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+.skip-link {
+  position: absolute;
+  left: -10000px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+.skip-link:focus {
+  position: fixed;
+  top: 0.5rem;
+  left: 0.5rem;
+  width: auto;
+  height: auto;
+  padding: 0.5rem 0.75rem;
+  background: var(--color-bg);
+  border: 1px solid var(--color-rule);
+  z-index: 100;
+}
+
+/* ------------------------------------------------------------------ */
+/* Topbar                                                              */
+/* ------------------------------------------------------------------ */
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem var(--pad);
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-rule);
+}
+
+.topbar-home {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--color-ink-soft);
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-feature-settings: "smcp";
+  font-variant: small-caps;
+  letter-spacing: 0.04em;
+}
+.topbar-home:hover {
+  color: var(--color-accent);
+}
+.topbar-home-label {
+  display: none;
+}
+@media (min-width: 480px) {
+  .topbar-home-label {
+    display: inline;
+  }
+}
+
+.topbar-title {
+  flex: 1;
+  text-align: center;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1rem;
+  color: var(--color-ink-soft);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.topbar-credit {
+  font-size: 0.85rem;
+  color: var(--color-ink-soft);
+  text-decoration: none;
+  font-feature-settings: "smcp";
+  font-variant: small-caps;
+  letter-spacing: 0.04em;
+}
+.topbar-credit:hover {
+  color: var(--color-accent);
+}
+
+.theme-toggle {
+  background: none;
+  border: 0;
+  color: var(--color-ink-soft);
+  cursor: pointer;
+  padding: 0.4rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  margin-left: 0.25rem;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+.theme-toggle:hover {
+  color: var(--color-accent);
+  background: var(--color-bg-alt);
+}
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+/* Light mode → show moon (offer dark). Dark mode → show sun (offer light). */
+.theme-toggle .icon-sun { display: none; }
+.theme-toggle .icon-moon { display: inline-block; }
+html.dark .theme-toggle .icon-sun { display: inline-block; }
+html.dark .theme-toggle .icon-moon { display: none; }
+
+/* Hide the Contents link on the TOC view itself (set via [data-view]) */
+body[data-view="toc"] .topbar-home {
+  visibility: hidden;
+}
+
+/* ------------------------------------------------------------------ */
+/* TOC view                                                            */
+/* ------------------------------------------------------------------ */
+
+.toc-hero {
+  text-align: center;
+  padding: 2.5rem var(--pad) 1.5rem;
+}
+.toc-hero img {
+  max-width: 17rem;
+  margin: 0 auto;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+}
+.toc-hero-title {
+  margin: 1.5rem 0 0.25rem;
+  font-family: var(--font-display);
+  font-size: 1.85rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--color-ink);
+}
+.toc-hero-subtitle {
+  margin: 0;
+  font-style: italic;
+  color: var(--color-ink-soft);
+  font-size: 1.05rem;
+}
+.toc-hero-byline {
+  margin-top: 1.5rem;
+  font-feature-settings: "smcp";
+  font-variant: small-caps;
+  letter-spacing: 0.06em;
+  color: var(--color-ink-soft);
+  font-size: 0.95rem;
+}
+.toc-hero-byline strong {
+  font-weight: 600;
+  color: var(--color-ink);
+}
+.toc-hero-meta {
+  margin-top: 0.4rem;
+  color: var(--color-ink-soft);
+  font-size: 0.92rem;
+}
+
+.toc-intro {
+  max-width: var(--max-text);
+  margin: 0 auto;
+  padding: 1rem var(--pad) 2rem;
+  font-size: 1.05rem;
+  color: var(--color-ink);
+}
+.toc-intro p {
+  margin: 0 0 1rem;
+}
+.toc-intro p:last-child {
+  margin-bottom: 0;
+}
+
+.toc-section-rule {
+  max-width: var(--max-text);
+  margin: 1.5rem auto;
+  border: 0;
+  border-top: 1px solid var(--color-rule);
+}
+
+.toc-group-label {
+  max-width: var(--max-text);
+  margin: 1.5rem auto 0.4rem;
+  padding: 0 var(--pad);
+  font-feature-settings: "smcp";
+  font-variant: small-caps;
+  letter-spacing: 0.06em;
+  color: var(--color-ink-soft);
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.toc-list {
+  max-width: var(--max-text);
+  margin: 0 auto 1rem;
+  padding: 0 var(--pad);
+  list-style: none;
+}
+
+/* Front- and back-matter rows: simpler layout than chapters (no roman
+   numeral or page number on the left/right rails). */
+.toc-link-supp .toc-roman,
+.toc-link-supp .toc-page {
+  visibility: hidden;
+  width: 1.5rem;
+}
+.toc-link-supp .toc-title {
+  font-style: italic;
+}
+.toc-list li {
+  margin: 0;
+  border-bottom: 1px dotted var(--color-rule);
+}
+.toc-list li:last-child {
+  border-bottom: 0;
+}
+.toc-link {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  padding: 0.7rem 0;
+  text-decoration: none;
+  color: var(--color-ink);
+}
+.toc-link:hover {
+  color: var(--color-accent);
+}
+.toc-link:hover .toc-page {
+  color: var(--color-accent);
+}
+.toc-roman {
+  flex-shrink: 0;
+  width: 3.5rem;
+  font-feature-settings: "smcp";
+  font-variant: small-caps;
+  letter-spacing: 0.04em;
+  color: var(--color-ink-soft);
+  font-size: 0.95rem;
+}
+.toc-title {
+  flex: 1;
+  font-size: 1.05rem;
+  line-height: 1.4;
+}
+.toc-title em {
+  display: block;
+  font-style: italic;
+  color: var(--color-ink-soft);
+  font-size: 0.9rem;
+  margin-top: 0.1rem;
+}
+.toc-page {
+  flex-shrink: 0;
+  color: var(--color-ink-soft);
+  font-size: 0.9rem;
+  font-variant-numeric: oldstyle-nums;
+}
+.toc-illus-dot {
+  display: inline-block;
+  width: 0.4rem;
+  height: 0.4rem;
+  margin-left: 0.4rem;
+  vertical-align: middle;
+  border-radius: 50%;
+  background: var(--color-accent);
+  opacity: 0.6;
+}
+
+/* ------------------------------------------------------------------ */
+/* Chapter view                                                        */
+/* ------------------------------------------------------------------ */
+
+.chapter {
+  max-width: var(--max-text);
+  margin: 0 auto;
+  padding: 2rem var(--pad) 1rem;
+}
+.chapter-roman {
+  text-align: center;
+  font-feature-settings: "smcp";
+  font-variant: small-caps;
+  letter-spacing: 0.08em;
+  color: var(--color-ink-soft);
+  margin: 0 0 0.5rem;
+  font-size: 0.95rem;
+}
+.chapter-title {
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 1.85rem;
+  font-weight: 600;
+  margin: 0 0 0.4rem;
+  color: var(--color-ink);
+}
+.chapter-modern {
+  text-align: center;
+  margin: 0 0 1.5rem;
+  font-style: italic;
+  color: var(--color-ink-soft);
+  font-size: 0.98rem;
+}
+.chapter-modern a {
+  color: inherit;
+  text-decoration: underline;
+}
+
+.chapter-illus {
+  margin: 1.75rem 0;
+  text-align: center;
+}
+.chapter-illus img {
+  max-width: min(100%, 22rem);
+  margin: 0 auto;
+  background: var(--color-plate-bg);
+}
+/* In dark mode, give the etching plate a thin frame so the white background
+   reads as intentional rather than a glitch. */
+html.dark .chapter-illus img {
+  border: 1px solid var(--color-plate-rule);
+  padding: 0.5rem;
+}
+html.dark .toc-hero img {
+  background: var(--color-plate-bg);
+  padding: 0.5rem;
+  border-radius: 2px;
+}
+.chapter-illus-caption {
+  margin: 0.6rem auto 0;
+  font-style: italic;
+  color: var(--color-ink-soft);
+  font-size: 0.92rem;
+}
+
+/* Inline song notation — placed in the body where Bailey originally set the
+   music. Floats centred between paragraphs, bordered like a small plate. */
+.chapter-song-inline {
+  margin: 1.5rem auto;
+  text-align: center;
+}
+.chapter-song-inline img {
+  max-width: min(100%, 22rem);
+  margin: 0 auto;
+  background: var(--color-plate-bg);
+  border: 1px solid var(--color-rule);
+  padding: 0.5rem;
+}
+
+.chapter-songs {
+  margin: 1.75rem 0;
+  padding: 1rem 1.25rem;
+  background: var(--color-bg-alt);
+  border-radius: 4px;
+}
+.chapter-songs-label {
+  margin: 0 0 0.75rem;
+  font-feature-settings: "smcp";
+  font-variant: small-caps;
+  letter-spacing: 0.06em;
+  font-size: 0.92rem;
+  color: var(--color-ink-soft);
+}
+.chapter-song {
+  margin: 0 0 1rem;
+  text-align: center;
+}
+.chapter-song:last-child {
+  margin-bottom: 0;
+}
+.chapter-song img {
+  max-width: min(100%, 22rem);
+  margin: 0 auto;
+}
+
+.chapter-body {
+  font-size: 1.125rem;
+  line-height: 1.7;
+}
+.chapter-body p {
+  margin: 0 0 1.1rem;
+  text-indent: 1.5em;
+}
+.chapter-body p:first-child {
+  text-indent: 0;
+}
+.chapter-body p:first-child::first-letter {
+  font-family: var(--font-display);
+  font-size: 3.4rem;
+  line-height: 0.85;
+  float: left;
+  padding: 0.25rem 0.5rem 0 0;
+  color: var(--color-accent);
+}
+
+/* Front matter and back matter use the same column but skip the drop-cap,
+   since these aren't narrative chapter openings. */
+body[data-view="supplement"] .chapter-body p:first-child::first-letter {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  float: none;
+  padding: 0;
+  color: inherit;
+}
+body[data-view="supplement"] .chapter-body p {
+  text-indent: 0;
+}
+
+/* Appendix page scans (the pigeon-holes diagram). Two figures stacked, with
+   the original book-page numbers as captions. */
+.appendix-pages {
+  margin: 2rem 0;
+}
+.appendix-pages .appendix-page {
+  margin: 0 0 1.5rem;
+  text-align: center;
+}
+.appendix-pages .appendix-page img {
+  max-width: 100%;
+  margin: 0 auto;
+  border: 1px solid var(--color-plate-rule);
+  background: var(--color-plate-bg);
+}
+.appendix-pages .appendix-page figcaption {
+  margin-top: 0.5rem;
+  font-style: italic;
+  color: var(--color-ink-soft);
+  font-size: 0.92rem;
+}
+
+/* Auto-linked references in chapter bodies. Subtle dotted underline so
+   they're discoverable without overwhelming the page. */
+.pigeon-hole-link,
+.chapter-ref-link {
+  color: inherit;
+  text-decoration: underline dotted var(--color-accent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+.pigeon-hole-link:hover,
+.chapter-ref-link:hover {
+  color: var(--color-accent);
+  text-decoration: underline solid var(--color-accent);
+}
+
+/* Light markdown rendering for back-matter entries (the synthesised index). */
+.chapter-body .md-heading {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin: 1.75rem 0 0.5rem;
+  color: var(--color-accent);
+  letter-spacing: 0.02em;
+}
+.chapter-body .md-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem;
+}
+.chapter-body .md-list li {
+  margin: 0.2rem 0;
+  padding: 0.1rem 0;
+  font-size: 1rem;
+}
+.chapter-body .md-list a {
+  color: var(--color-ink);
+  text-decoration: none;
+}
+.chapter-body .md-list a:hover {
+  color: var(--color-accent);
+  text-decoration: underline;
+}
+
+/* ------------------------------------------------------------------ */
+/* Prev / next nav                                                     */
+/* ------------------------------------------------------------------ */
+
+.chapter-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  max-width: var(--max-text);
+  margin: 2rem auto;
+  padding: 1.25rem var(--pad) 0;
+  border-top: 1px solid var(--color-rule);
+}
+.chapter-nav a,
+.chapter-nav span {
+  flex: 1;
+  text-decoration: none;
+  font-size: 0.95rem;
+  line-height: 1.3;
+  color: var(--color-ink-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.chapter-nav .chapter-nav-prev {
+  text-align: left;
+}
+.chapter-nav .chapter-nav-next {
+  text-align: right;
+}
+.chapter-nav .chapter-nav-toc {
+  flex: 0 0 auto;
+  text-align: center;
+  font-feature-settings: "smcp";
+  font-variant: small-caps;
+  letter-spacing: 0.05em;
+  align-self: center;
+}
+.chapter-nav-label {
+  font-feature-settings: "smcp";
+  font-variant: small-caps;
+  letter-spacing: 0.05em;
+  font-size: 0.8rem;
+  color: var(--color-ink-soft);
+}
+.chapter-nav-target {
+  color: var(--color-ink);
+  font-style: italic;
+}
+.chapter-nav a:hover .chapter-nav-target {
+  color: var(--color-accent);
+}
+
+/* ------------------------------------------------------------------ */
+/* Site footer                                                         */
+/* ------------------------------------------------------------------ */
+
+.sitefooter {
+  max-width: var(--max-text);
+  margin: 2rem auto 3rem;
+  padding: 1.5rem var(--pad) 0;
+  border-top: 1px solid var(--color-rule);
+  font-size: 0.88rem;
+  color: var(--color-ink-soft);
+  line-height: 1.55;
+}
+.sitefooter p {
+  margin: 0 0 0.5rem;
+}
+.sitefooter p:last-child {
+  margin-bottom: 0;
+  /* Compress so the credit line fits without wrapping at the reading-column
+     max width on desktop. On phones we swap to a compact form (just the
+     three links separated by middots) so it still fits on one line. */
+  font-size: 0.78rem;
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sitefooter-short {
+  display: none;
+}
+@media (max-width: 540px) {
+  .sitefooter-long {
+    display: none;
+  }
+  .sitefooter-short {
+    display: inline;
+  }
+  .sitefooter p:last-child {
+    font-size: 0.82rem;
+    letter-spacing: 0;
+    text-align: center;
+  }
+}
+
+.noscript {
+  max-width: var(--max-text);
+  margin: 4rem auto;
+  padding: 1.5rem var(--pad);
+  background: var(--color-bg-alt);
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+/* ------------------------------------------------------------------ */
+/* Small-screen tweaks                                                 */
+/* ------------------------------------------------------------------ */
+
+@media (max-width: 420px) {
+  .toc-hero {
+    padding: 1.75rem var(--pad) 1rem;
+  }
+  .toc-hero-title {
+    font-size: 1.5rem;
+  }
+  .toc-hero img {
+    max-width: 14rem;
+  }
+  .chapter-title {
+    font-size: 1.55rem;
+  }
+  .chapter-body {
+    font-size: 1.06rem;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Image lightbox                                                      */
+/* ------------------------------------------------------------------ */
+
+/* Make every clickable image hint that it is — cursor + soft hover lift. */
+.toc-hero img,
+.chapter-illus img,
+.chapter-song img,
+.appendix-page img {
+  cursor: zoom-in;
+  transition: filter 0.15s ease;
+}
+.toc-hero img:hover,
+.chapter-illus img:hover,
+.chapter-song img:hover,
+.appendix-page img:hover {
+  filter: brightness(0.96);
+}
+
+.lightbox {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 18, 14, 0.92);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+  padding: 1.5rem;
+  overscroll-behavior: contain;
+}
+.lightbox.open {
+  display: flex;
+}
+.lightbox-img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  cursor: zoom-out;
+  background: var(--color-plate-bg);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+}
+.lightbox-close {
+  position: fixed;
+  top: 0.75rem;
+  right: 0.75rem;
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 50%;
+  border: 1px solid var(--color-rule);
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-size: 1.5rem;
+  font-family: var(--font-serif);
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+.lightbox-close:hover {
+  background: var(--color-plate-bg);
+  color: var(--color-accent);
+}
+.lightbox-close:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+@media (max-width: 480px) {
+  .lightbox {
+    padding: 0.5rem;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Print                                                               */
+/* ------------------------------------------------------------------ */
+
+@media print {
+  .topbar,
+  .chapter-nav,
+  .skip-link {
+    display: none;
+  }
+  body {
+    background: var(--color-plate-bg);
+    color: #000;
+  }
+  .chapter,
+  .toc-list,
+  .sitefooter {
+    max-width: none;
+  }
+}

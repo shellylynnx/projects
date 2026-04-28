@@ -20,6 +20,10 @@ A browser-based tool for creating one-page zines. Upload 8 images to fill the pa
 
 Preview artwork in risograph ink colors and simulate overprint. Upload an image, assign up to three ink layers from 23 standard riso colors, and see how they combine with multiply blending. Includes mask painting tools (brush, eraser, magic wand) for color separation, per-layer color previews, and downloadable B&W separation plates for riso printing.
 
+### [Opera Glass](opera-glass/)
+
+An interactive reading copy of Florence Merriam Bailey's 1889 field guide *Birds Through an Opera Glass*. All 70 chapters with original illustrations and Bailey's hand-transcribed song notations placed where she set them on the page, plus the preface, hints to observers, appendix, and a synthesised alphabetical index. OCR'd from the Internet Archive's Harvard scan, public domain, hash-routed, light/dark theme.
+
 ## Tech Stack
 
 All projects are lightweight, single-page web apps with no build step required:
