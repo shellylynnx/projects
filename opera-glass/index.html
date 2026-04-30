@@ -3,51 +3,86 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <title>Birds Through an Opera Glass — Florence Merriam Bailey, 1889</title>
+    <title>Birds Through an Opera Glass (1889): Interactive Online Edition with Modern Audio</title>
     <meta
       name="description"
-      content="An interactive reading of Florence Merriam Bailey's 1889 field guide Birds Through an Opera Glass. Seventy chapters, original illustrations, song notations, public domain. Curated by Shelly Xiong."
+      content="Florence Merriam Bailey's 1889 field guide, fully readable online with vernacular gloss tooltips, modern audio for every transcribed bird song, eBird and Cornell links per species, and full-text search across all 70 chapters."
     />
     <meta name="author" content="Florence Merriam Bailey" />
     <link rel="canonical" href="https://shellylynnx.github.io/projects/opera-glass/" />
 
-    <!-- Open Graph / Twitter -->
-    <meta property="og:type" content="book" />
-    <meta property="og:title" content="Birds Through an Opera Glass — Florence Merriam Bailey, 1889" />
+    <!-- Open Graph / Twitter. The OG image is hosted on the main
+         shellylynnx.com domain so the reader and the Library catalog
+         page share the same Bobolink illustration in social previews. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Birds Through an Opera Glass (1889): Interactive Online Edition with Modern Audio" />
     <meta
       property="og:description"
-      content="An interactive 1889 field guide. Seventy chapters, original illustrations, song notations. Public domain."
+      content="Florence Merriam Bailey's 1889 field guide, fully readable online with vernacular gloss tooltips, modern audio, and full-text search across all 70 chapters."
     />
-    <meta property="og:image" content="https://shellylynnx.github.io/projects/opera-glass/assets/title-page.png" />
+    <meta property="og:image" content="https://shellylynnx.com/images/social/opera-glass-og-bobolink.png?v=2" />
     <meta property="og:url" content="https://shellylynnx.github.io/projects/opera-glass/" />
     <meta property="og:site_name" content="shellylynnx.com" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Birds Through an Opera Glass — Florence Merriam Bailey, 1889" />
+    <meta name="twitter:title" content="Birds Through an Opera Glass (1889): Interactive Online Edition with Modern Audio" />
     <meta
       name="twitter:description"
-      content="An interactive 1889 field guide, free to read."
+      content="Florence Merriam Bailey's 1889 field guide, fully readable online with vernacular gloss tooltips, modern audio, and full-text search."
     />
-    <meta name="twitter:image" content="https://shellylynnx.github.io/projects/opera-glass/assets/title-page.png" />
+    <meta name="twitter:image" content="https://shellylynnx.com/images/social/opera-glass-og-bobolink.png?v=2" />
 
-    <!-- Schema.org Book -->
+    <!--
+      Schema.org WebApplication. Replaces the previous bare Book schema
+      because the reader is not itself a book; it is a web app ABOUT a
+      book. The Book is referenced via the nested `about` field, which
+      lets AI summarizers like Perplexity / ChatGPT-browse / Google AI
+      Overview pick up the differentiated featureList (gloss tooltips,
+      modern audio, search) when summarizing what this reader offers
+      versus the canonical Internet Archive / BHL scans.
+    -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
-        "@type": "Book",
-        "name": "Birds Through an Opera Glass",
-        "author": {
-          "@type": "Person",
-          "name": "Florence Merriam Bailey",
-          "alternateName": "Florence A. Merriam"
-        },
-        "datePublished": "1889",
-        "publisher": "Houghton, Mifflin and Company",
-        "inLanguage": "en",
-        "isAccessibleForFree": true,
-        "license": "https://creativecommons.org/publicdomain/mark/1.0/",
+        "@type": "WebApplication",
+        "@id": "https://shellylynnx.github.io/projects/opera-glass/#reader",
+        "name": "Birds Through an Opera Glass: Interactive Online Edition",
         "url": "https://shellylynnx.github.io/projects/opera-glass/",
-        "image": "https://shellylynnx.github.io/projects/opera-glass/assets/title-page.png",
-        "sameAs": "https://archive.org/details/birdsthroughano00bailgoog"
+        "description": "Interactive online edition of Florence Merriam Bailey's 1889 field guide, with vernacular gloss tooltips, modern audio for every transcribed bird song, eBird and Cornell links per species, and full-text search across all 70 chapters.",
+        "applicationCategory": "EducationApplication",
+        "operatingSystem": "Any (web browser)",
+        "isAccessibleForFree": true,
+        "browserRequirements": "Requires JavaScript. Modern browser recommended.",
+        "creator": {
+          "@type": "Person",
+          "name": "Shelly Lynn Xiong",
+          "url": "https://shellylynnx.com",
+          "sameAs": [
+            "https://shellylynnx.com/about/",
+            "https://bsky.app/profile/subwaybirder.bsky.social"
+          ]
+        },
+        "about": {
+          "@type": "Book",
+          "@id": "https://shellylynnx.com/library/birds-through-an-opera-glass/#book",
+          "name": "Birds Through an Opera Glass",
+          "author": {
+            "@type": "Person",
+            "name": "Florence A. Merriam",
+            "alternateName": "Florence Merriam Bailey"
+          },
+          "datePublished": "1889",
+          "publisher": {
+            "@type": "Organization",
+            "name": "Houghton, Mifflin and Company"
+          }
+        },
+        "featureList": [
+          "Full text of all 70 chapters with original illustrations",
+          "Vernacular gloss tooltips for 19th-century bird names and Bailey's regional vocabulary",
+          "Modern eBird and Cornell links for each species",
+          "Modern xeno-canto audio recordings paired with Bailey's transcribed bird songs",
+          "Full-text search across the entire book"
+        ]
       }
     </script>
 
@@ -98,7 +133,26 @@
     </script>
 
     <main id="main" tabindex="-1">
-      <!-- Rendered by main.js -->
+      <!--
+        Static "What this is" intro. AI summarizers (Perplexity,
+        ChatGPT-browse, Google AI Overview) extract from the initial
+        HTML before JavaScript runs, so this paragraph is what they
+        see when describing the page. main.js wipes <main> on first
+        render and replaces it with the TOC; users see this intro
+        only briefly before the TOC paints.
+      -->
+      <div class="initial-intro">
+        <p>
+          This is an interactive online edition of <em>Birds Through an Opera Glass</em>
+          (1889) by Florence Merriam Bailey, the first American field guide
+          written by a woman and the first to teach birdwatching without
+          firearms. All 70 chapters are readable below. Hover over any
+          19th-century bird name for a modern gloss. Tap any species name
+          for live eBird and Cornell links. Tap any musical-notation icon
+          to hear a modern xeno-canto recording of Bailey's transcribed
+          song. Use the search box to query the full text.
+        </p>
+      </div>
       <noscript>
         <div class="noscript">
           This reading copy needs JavaScript. The full text of <em>Birds Through an Opera Glass</em>

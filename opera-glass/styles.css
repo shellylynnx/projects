@@ -708,6 +708,23 @@ html.dark .chapter-glossary-footer a:hover {
   font-size: 1rem;
 }
 
+/* AI-visibility lead paragraph. Visible in the initial server HTML
+   (so AI summarizers extract it as the page summary) and during the
+   brief moment before main.js wipes <main> to render the TOC. Styled
+   the same as a normal page intro so the brief flash is unobtrusive
+   for human readers who happen to see it. */
+.initial-intro {
+  max-width: var(--max-text);
+  margin: 2rem auto;
+  padding: 0 var(--pad);
+  font-size: 1rem;
+  line-height: 1.65;
+  color: var(--color-ink-soft);
+}
+.initial-intro p {
+  margin: 0;
+}
+
 /* ------------------------------------------------------------------ */
 /* Small-screen tweaks                                                 */
 /* ------------------------------------------------------------------ */
