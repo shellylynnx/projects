@@ -390,6 +390,10 @@ def clean_paragraphs(text: str) -> str:
     OCR_FIXES = [
         # Curly opening-quote + "I" merged into "T" (e.g., "“Tf you capture")
         (r"\bTf\b", "If"),
+        # Same merge pattern, "I" + "n" → "Tn" (e.g., "“Tn the mean time", 6
+        # occurrences in the body, all unambiguous since "Tn" is not an
+        # English word).
+        (r"\bTn\b", "In"),
         # OCR'd "The"/"the" with "h" read as "n"
         (r"\bTne\b", "The"),
         (r"\btne\b", "the"),
