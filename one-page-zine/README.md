@@ -2,6 +2,8 @@
 
 A browser-based tool for creating a one-page zine. Upload 8 images and download a print-ready file.
 
+Showcased on [shellylynnx.com/tools](https://shellylynnx.com/tools).
+
 ---
 
 ## How to Use

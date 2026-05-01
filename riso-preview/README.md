@@ -2,6 +2,8 @@
 
 Preview artwork in risograph ink colors and simulate overprint. Upload an image, assign up to three ink layers, and see how they combine with multiply blending, the same way riso ink layers interact on paper.
 
+Showcased on [shellylynnx.com/tools](https://shellylynnx.com/tools).
+
 ## Features
 
 - **3 ink layers**: choose from 23 standard risograph ink colors per layer

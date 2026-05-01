@@ -22,7 +22,7 @@ Preview artwork in risograph ink colors and simulate overprint. Upload an image,
 
 ### [Opera Glass](opera-glass/)
 
-An interactive reading copy of Florence Merriam Bailey's 1889 field guide *Birds Through an Opera Glass*. All 70 chapters with original illustrations and Bailey's hand-transcribed song notations placed where she set them on the page, plus the preface, hints to observers, appendix, and a synthesised alphabetical index. OCR'd from the Internet Archive's Harvard scan, public domain, hash-routed, light/dark theme.
+An interactive reading copy of Florence Merriam Bailey's 1889 field guide *Birds Through an Opera Glass*. All 70 chapters with original illustrations and Bailey's hand-transcribed song notations placed where she set them on the page, plus the preface, hints to observers, appendix, and a synthesized alphabetical index. Audio for every song notation (curated xeno-canto recordings), 52 annotation glosses with hover/tap tooltips, a glossary index, full-text search, reading progress tracking, and modern species-account links. OCR'd from the Internet Archive's Harvard scan, public domain, hash-routed, light/dark theme.
 
 ## Tech Stack
 

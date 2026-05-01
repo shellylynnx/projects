@@ -2,6 +2,8 @@
 
 Browse bird-related artwork from [The Metropolitan Museum of Art](https://www.metmuseum.org/) collection, enriched with taxonomy data from [eBird](https://ebird.org/).
 
+Showcased on [shellylynnx.com/tools](https://shellylynnx.com/tools).
+
 ## Features
 
 - **9,751 bird artworks** indexed from the MET Open Access collection (5,069 with primary images)

@@ -6,6 +6,8 @@ illustrations, eleven song notations, all public domain.
 
 Live: <https://shellylynnx.github.io/projects/opera-glass/>
 
+Showcased on [shellylynnx.com/tools](https://shellylynnx.com/tools), with an illustrated gallery at [shellylynnx.com/library/birds-through-an-opera-glass](https://shellylynnx.com/library/birds-through-an-opera-glass).
+
 ## What this is
 
 Bailey was 25 when she wrote this. It is one of the first popular American

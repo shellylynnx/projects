@@ -4,7 +4,7 @@
 
 NYCoffleash is a free, open-source web app for exploring NYC dog runs, viewing off-leash dog complaints, tracking sick/injured animal reports, and accessing reporting resources, all on an interactive map powered by NYC Open Data.
 
-Live site: _coming soon_
+Showcased on [shellylynnx.com/tools](https://shellylynnx.com/tools).
 
 ---
 
