@@ -1,8 +1,8 @@
 // canvas.js — Canvas rendering and coverCrop logic
 
-const DPI = 150;
-const PAGE_W = Math.round(11 * DPI);   // 1650
-const PAGE_H = Math.round(8.5 * DPI);  // 1275
+const DPI = 300;
+const PAGE_W = Math.round(11 * DPI);   // 3300
+const PAGE_H = Math.round(8.5 * DPI);  // 2550
 const COLS = 4;
 const ROWS = 2;
 

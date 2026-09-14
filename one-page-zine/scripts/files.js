@@ -6,7 +6,7 @@ import { PAGE_W, PAGE_H, COLS, ROWS } from './canvas.js';
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif'];
 
-// Maximum pixel dimensions needed per cell at 150 DPI
+// Maximum pixel dimensions needed per cell at 300 DPI
 const MAX_CELL_W = PAGE_W / COLS;
 const MAX_CELL_H = PAGE_H / ROWS;
 
