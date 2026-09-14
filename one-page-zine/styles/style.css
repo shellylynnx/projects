@@ -2,6 +2,13 @@
    One Page Zine — styling adapted from shellylynnx.com
    ======================================== */
 
+/* The page's CSP has no 'unsafe-inline' in style-src, so the canvas's
+   inline style="display:none" attribute is silently ignored by the
+   browser. Hide it here instead, where the CSP allows it. */
+#canvas {
+  display: none;
+}
+
 :root {
   --color-bg: #1A1714;
   --color-bg-alt: #211e1a;
