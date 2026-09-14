@@ -1,6 +1,6 @@
 // grid.js — Grid building and slot management
 
-import { processFile, ALLOWED_TYPES } from './files.js';
+import { processFile, ALLOWED_TYPES, isLowRes } from './files.js';
 import { showToast, updateUI } from './ui.js';
 import { saveImage, removeStoredImage, loadAllData } from './storage.js';
 
@@ -93,12 +93,9 @@ function handleFile(index, file) {
   processFile(file)
     .then(({ img, dataUrl, lowRes }) => {
       images[index] = img;
-      renderSlot(index, dataUrl);
+      renderSlot(index, dataUrl, lowRes);
       saveImage(index, dataUrl);
       updateUI(images);
-      if (lowRes) {
-        showToast(`${LABELS[index]} image is low resolution and may look blurry when printed.`, 'info', 4000);
-      }
     })
     .catch((err) => {
       showToast(err.message, 'error');
@@ -106,20 +103,31 @@ function handleFile(index, file) {
 }
 
 /**
- * Render a preview image in a slot.
+ * Render a preview image in a slot, with an optional low-resolution badge.
  */
-function renderSlot(index, src) {
+function renderSlot(index, src, lowRes = false) {
   const grid = document.getElementById('grid');
   const slot = grid.children[index];
   const existing = slot.querySelector('img');
   if (existing) existing.remove();
+  const existingBadge = slot.querySelector('.lowres-badge');
+  if (existingBadge) existingBadge.remove();
 
   const preview = document.createElement('img');
   preview.src = src;
   preview.alt = `Preview for ${LABELS[index]}`;
   slot.insertBefore(preview, slot.querySelector('.remove'));
   slot.classList.add('filled');
-  slot.setAttribute('aria-label', `${LABELS[index]} — image uploaded. Press Enter to remove.`);
+
+  if (lowRes) {
+    const badge = document.createElement('span');
+    badge.className = 'lowres-badge';
+    badge.textContent = 'Low resolution — may look blurry printed';
+    slot.insertBefore(badge, slot.querySelector('.remove'));
+    slot.setAttribute('aria-label', `${LABELS[index]} — image uploaded, low resolution. Press Enter to remove.`);
+  } else {
+    slot.setAttribute('aria-label', `${LABELS[index]} — image uploaded. Press Enter to remove.`);
+  }
 }
 
 /**
@@ -131,6 +139,8 @@ function removeImage(index) {
   const slot = grid.children[index];
   const img = slot.querySelector('img');
   if (img) img.remove();
+  const badge = slot.querySelector('.lowres-badge');
+  if (badge) badge.remove();
   slot.classList.remove('filled');
   slot.setAttribute('aria-label', `${LABELS[index]} — click or drag to upload image`);
 
@@ -154,7 +164,7 @@ export function restoreFromStorage() {
     const img = new Image();
     img.onload = () => {
       images[index] = img;
-      renderSlot(index, dataUrl);
+      renderSlot(index, dataUrl, isLowRes(img));
       updateUI(images);
       restoredCount++;
     };
@@ -176,6 +186,8 @@ export function clearAll() {
     const slot = grid.children[i];
     const img = slot.querySelector('img');
     if (img) img.remove();
+    const badge = slot.querySelector('.lowres-badge');
+    if (badge) badge.remove();
     slot.classList.remove('filled');
     slot.setAttribute('aria-label', `${LABELS[i]} — click or drag to upload image`);
     const input = slot.querySelector('input[type="file"]');

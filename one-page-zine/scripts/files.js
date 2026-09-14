@@ -111,4 +111,4 @@ export function processFile(file) {
   });
 }
 
-export { ALLOWED_TYPES, MAX_FILE_SIZE };
+export { ALLOWED_TYPES, MAX_FILE_SIZE, isLowRes };
