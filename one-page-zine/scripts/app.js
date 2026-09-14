@@ -16,7 +16,8 @@ restoreFromStorage();
 
 document.getElementById('downloadBtn').addEventListener('click', () => {
   try {
-    const canvas = renderCanvas(getImages());
+    const showGridLines = document.getElementById('gridLinesCheckbox').checked;
+    const canvas = renderCanvas(getImages(), { showGridLines });
     const pngDataUrl = setPngDpi(canvas.toDataURL('image/png'), DPI);
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF({ orientation: 'landscape', unit: 'in', format: [11, 8.5] });
@@ -31,7 +32,8 @@ document.getElementById('downloadBtn').addEventListener('click', () => {
 
 document.getElementById('downloadImgBtn').addEventListener('click', () => {
   try {
-    const canvas = renderCanvas(getImages());
+    const showGridLines = document.getElementById('gridLinesCheckbox').checked;
+    const canvas = renderCanvas(getImages(), { showGridLines });
     const link = document.createElement('a');
     link.download = 'zine.png';
     link.href = setPngDpi(canvas.toDataURL('image/png'), DPI);

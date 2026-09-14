@@ -227,6 +227,29 @@ body.light .grid {
   color: var(--color-secondary);
 }
 
+/* ── Options ─────────────────────────────────────────────────── */
+.options {
+  margin-top: 1.25rem;
+  text-align: right;
+}
+
+.options label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.options input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-secondary);
+  cursor: pointer;
+}
+
 /* ── Buttons ─────────────────────────────────────────────────── */
 .buttons {
   display: flex;
@@ -340,6 +363,7 @@ button:focus-visible {
 /* ── Responsive ──────────────────────────────────────────────── */
 @media (max-width: 640px) {
   body { padding: 2rem 1rem; }
+  .options { text-align: center; }
   .buttons {
     justify-content: stretch;
     flex-direction: column;

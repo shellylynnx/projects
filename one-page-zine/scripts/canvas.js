@@ -34,7 +34,7 @@ export function coverCrop(imgW, imgH, targetW, targetH) {
 /**
  * Renders all images onto the hidden canvas and returns it.
  */
-export function renderCanvas(images) {
+export function renderCanvas(images, { showGridLines = false } = {}) {
   const canvas = document.getElementById('canvas');
   canvas.width = PAGE_W;
   canvas.height = PAGE_H;
@@ -69,14 +69,16 @@ export function renderCanvas(images) {
     }
   });
 
-  // Thin grid lines
-  ctx.strokeStyle = 'rgba(0,0,0,0.15)';
-  ctx.lineWidth = 1;
-  for (let c = 1; c < COLS; c++) {
-    ctx.beginPath(); ctx.moveTo(c * cellW, 0); ctx.lineTo(c * cellW, PAGE_H); ctx.stroke();
-  }
-  for (let r = 1; r < ROWS; r++) {
-    ctx.beginPath(); ctx.moveTo(0, r * cellH); ctx.lineTo(PAGE_W, r * cellH); ctx.stroke();
+  // Thin fold guide lines (opt-in — off by default)
+  if (showGridLines) {
+    ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+    ctx.lineWidth = 1;
+    for (let c = 1; c < COLS; c++) {
+      ctx.beginPath(); ctx.moveTo(c * cellW, 0); ctx.lineTo(c * cellW, PAGE_H); ctx.stroke();
+    }
+    for (let r = 1; r < ROWS; r++) {
+      ctx.beginPath(); ctx.moveTo(0, r * cellH); ctx.lineTo(PAGE_W, r * cellH); ctx.stroke();
+    }
   }
 
   return canvas;
