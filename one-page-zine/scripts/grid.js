@@ -122,7 +122,7 @@ function renderSlot(index, src, lowRes = false) {
   if (lowRes) {
     const badge = document.createElement('span');
     badge.className = 'lowres-badge';
-    badge.textContent = 'Low resolution — may look blurry printed';
+    badge.textContent = 'Low resolution image uploaded. May look blurry when printed.';
     slot.insertBefore(badge, slot.querySelector('.remove'));
     slot.setAttribute('aria-label', `${LABELS[index]} — image uploaded, low resolution. Press Enter to remove.`);
   } else {
