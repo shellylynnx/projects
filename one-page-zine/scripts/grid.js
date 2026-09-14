@@ -91,11 +91,14 @@ function handleFile(index, file) {
   if (!file) return;
 
   processFile(file)
-    .then(({ img, dataUrl }) => {
+    .then(({ img, dataUrl, lowRes }) => {
       images[index] = img;
       renderSlot(index, dataUrl);
       saveImage(index, dataUrl);
       updateUI(images);
+      if (lowRes) {
+        showToast(`${LABELS[index]} image is low resolution and may look blurry when printed.`, 'info', 4000);
+      }
     })
     .catch((err) => {
       showToast(err.message, 'error');

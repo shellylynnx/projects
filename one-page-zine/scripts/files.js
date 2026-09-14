@@ -27,6 +27,15 @@ export function validateFile(file) {
 }
 
 /**
+ * Whether an image has fewer pixels than a panel needs to print crisply at
+ * 300 DPI. It will still be used if the caller allows it — this only flags
+ * the risk of a blurry result from upscaling.
+ */
+function isLowRes(img) {
+  return img.naturalWidth < MAX_CELL_W || img.naturalHeight < MAX_CELL_H;
+}
+
+/**
  * Downscale an image if it exceeds the needed cell resolution.
  * Returns a Promise that resolves with a (possibly smaller) data URL.
  */
@@ -79,19 +88,20 @@ export function processFile(file) {
       };
 
       img.onload = () => {
+        const lowRes = isLowRes(img);
         compressImage(img, dataUrl)
           .then((compressedDataUrl) => {
             if (compressedDataUrl !== dataUrl) {
               // Re-create image from compressed data
               const compImg = new Image();
-              compImg.onload = () => resolve({ img: compImg, dataUrl: compressedDataUrl });
-              compImg.onerror = () => resolve({ img, dataUrl }); // fallback to original
+              compImg.onload = () => resolve({ img: compImg, dataUrl: compressedDataUrl, lowRes });
+              compImg.onerror = () => resolve({ img, dataUrl, lowRes }); // fallback to original
               compImg.src = compressedDataUrl;
             } else {
-              resolve({ img, dataUrl });
+              resolve({ img, dataUrl, lowRes });
             }
           })
-          .catch(() => resolve({ img, dataUrl })); // fallback on compression error
+          .catch(() => resolve({ img, dataUrl, lowRes })); // fallback on compression error
       };
 
       img.src = dataUrl;
