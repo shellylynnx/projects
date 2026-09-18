@@ -29,10 +29,17 @@ The grid shows 8 slots arranged in a 4×2 layout, each labeled with its zine pag
 Once all 8 slots are filled, two download buttons will become active:
 
 - **Download Zine PDF**: exports a landscape 11" × 8.5" PDF, ready to print. Requires an internet connection to load the PDF library.
-- **Download Zine Image**: exports a `zine.png` image at 150 DPI. Works fully offline.
+- **Download Zine Image**: exports a `zine.png` image at 300 DPI. Works fully offline.
+
+Below the slots are two options:
+
+- **Show fold guide lines in download**: draws faint fold/cut lines between panels (off by default).
+- **Tabloid size (11 × 17 in)**: exports a 17" × 11" sheet instead of Letter (off by default). Each panel is larger, so photos need more pixels to stay sharp.
+
+Panels that don't have enough pixels for a crisp 300 DPI print show a low-resolution warning; you can still use them.
 
 ### 4. Print and fold
-Print the downloaded file on a single sheet of 8.5" × 11" paper, then fold and cut to assemble your zine.
+Print the downloaded file on a single sheet of 8.5" × 11" paper (or 11" × 17" if you chose Tabloid), then fold and cut to assemble your zine.
 
 ---
 

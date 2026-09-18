@@ -8,9 +8,20 @@ const TOTAL = 8;
 const LABELS = ['Page 6', 'Page 5', 'Page 4', 'Page 3', 'Back Cover', 'Front Cover', 'Page 1', 'Page 2'];
 
 let images = new Array(TOTAL).fill(null);
+let pageSize = 'letter';
 
 export function getImages() {
   return images;
+}
+
+/**
+ * Set the page size ('letter' or 'tabloid'): reshapes the preview grid and
+ * re-checks each uploaded image against that size's resolution needs.
+ */
+export function setPageSize(size) {
+  pageSize = size;
+  document.getElementById('grid').classList.toggle('tabloid', size === 'tabloid');
+  images.forEach((img, i) => { if (img) updateLowResBadge(i); });
 }
 
 /**
@@ -91,9 +102,9 @@ function handleFile(index, file) {
   if (!file) return;
 
   processFile(file)
-    .then(({ img, dataUrl, lowRes }) => {
+    .then(({ img, dataUrl }) => {
       images[index] = img;
-      renderSlot(index, dataUrl, lowRes);
+      renderSlot(index, dataUrl);
       saveImage(index, dataUrl);
       updateUI(images);
     })
@@ -103,31 +114,41 @@ function handleFile(index, file) {
 }
 
 /**
- * Render a preview image in a slot, with an optional low-resolution badge.
+ * Render a preview image in a slot (images[index] must already be set).
  */
-function renderSlot(index, src, lowRes = false) {
+function renderSlot(index, src) {
   const grid = document.getElementById('grid');
   const slot = grid.children[index];
   const existing = slot.querySelector('img');
   if (existing) existing.remove();
-  const existingBadge = slot.querySelector('.lowres-badge');
-  if (existingBadge) existingBadge.remove();
 
   const preview = document.createElement('img');
   preview.src = src;
   preview.alt = `Preview for ${LABELS[index]}`;
   slot.insertBefore(preview, slot.querySelector('.remove'));
   slot.classList.add('filled');
+  updateLowResBadge(index);
+}
 
+/**
+ * Show or hide the low-resolution badge on a filled slot for the current page size.
+ */
+function updateLowResBadge(index) {
+  const slot = document.getElementById('grid').children[index];
+  const existingBadge = slot.querySelector('.lowres-badge');
+  if (existingBadge) existingBadge.remove();
+
+  const lowRes = isLowRes(images[index], pageSize);
   if (lowRes) {
     const badge = document.createElement('span');
     badge.className = 'lowres-badge';
     badge.textContent = 'Low resolution image uploaded. May look blurry when printed.';
     slot.insertBefore(badge, slot.querySelector('.remove'));
-    slot.setAttribute('aria-label', `${LABELS[index]} — image uploaded, low resolution. Press Enter to remove.`);
-  } else {
-    slot.setAttribute('aria-label', `${LABELS[index]} — image uploaded. Press Enter to remove.`);
   }
+  slot.setAttribute(
+    'aria-label',
+    `${LABELS[index]} — image uploaded${lowRes ? ', low resolution' : ''}. Press Enter to remove.`
+  );
 }
 
 /**
@@ -164,7 +185,7 @@ export function restoreFromStorage() {
     const img = new Image();
     img.onload = () => {
       images[index] = img;
-      renderSlot(index, dataUrl, isLowRes(img));
+      renderSlot(index, dataUrl);
       updateUI(images);
       restoredCount++;
     };

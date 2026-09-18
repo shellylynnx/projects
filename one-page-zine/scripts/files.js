@@ -1,14 +1,13 @@
 // files.js — File handling, validation, and client-side image compression
 
 import { showToast } from './ui.js';
-import { PAGE_W, PAGE_H, COLS, ROWS } from './canvas.js';
+import { getCellSize } from './canvas.js';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif'];
 
-// Maximum pixel dimensions needed per cell at 300 DPI
-const MAX_CELL_W = PAGE_W / COLS;
-const MAX_CELL_H = PAGE_H / ROWS;
+// Pixels needed per panel at 300 DPI on the largest supported page size
+const MAX_CELL = getCellSize('tabloid');
 
 /**
  * Validate a file before processing.
@@ -28,29 +27,33 @@ export function validateFile(file) {
 
 /**
  * Whether an image has fewer pixels than a panel needs to print crisply at
- * 300 DPI. It will still be used if the caller allows it — this only flags
- * the risk of a blurry result from upscaling.
+ * 300 DPI on the given page size. It will still be used if the caller allows
+ * it — this only flags the risk of a blurry result from upscaling.
  */
-function isLowRes(img) {
-  return img.naturalWidth < MAX_CELL_W || img.naturalHeight < MAX_CELL_H;
+export function isLowRes(img, size = 'letter') {
+  const cell = getCellSize(size);
+  return img.naturalWidth < cell.width || img.naturalHeight < cell.height;
 }
 
 /**
- * Downscale an image if it exceeds the needed cell resolution.
+ * Downscale an image that is far larger than a panel needs, keeping enough
+ * pixels to cover the largest panel (tabloid) in both dimensions.
  * Returns a Promise that resolves with a (possibly smaller) data URL.
  */
 function compressImage(img, dataUrl) {
-  // Only downscale if image is significantly larger than needed (2x threshold)
-  if (img.naturalWidth <= MAX_CELL_W * 2 && img.naturalHeight <= MAX_CELL_H * 2) {
+  // Scale at which the image exactly covers a tabloid panel (cover-fit needs both dimensions)
+  const scale = Math.max(
+    MAX_CELL.width / img.naturalWidth,
+    MAX_CELL.height / img.naturalHeight
+  );
+
+  // Only downscale if the image is significantly larger than needed (2x threshold)
+  if (scale * 2 >= 1) {
     return Promise.resolve(dataUrl);
   }
 
   return new Promise((resolve) => {
     const canvas = document.createElement('canvas');
-    const scale = Math.min(
-      (MAX_CELL_W * 2) / img.naturalWidth,
-      (MAX_CELL_H * 2) / img.naturalHeight
-    );
     canvas.width = Math.round(img.naturalWidth * scale);
     canvas.height = Math.round(img.naturalHeight * scale);
 
@@ -88,20 +91,19 @@ export function processFile(file) {
       };
 
       img.onload = () => {
-        const lowRes = isLowRes(img);
         compressImage(img, dataUrl)
           .then((compressedDataUrl) => {
             if (compressedDataUrl !== dataUrl) {
               // Re-create image from compressed data
               const compImg = new Image();
-              compImg.onload = () => resolve({ img: compImg, dataUrl: compressedDataUrl, lowRes });
-              compImg.onerror = () => resolve({ img, dataUrl, lowRes }); // fallback to original
+              compImg.onload = () => resolve({ img: compImg, dataUrl: compressedDataUrl });
+              compImg.onerror = () => resolve({ img, dataUrl }); // fallback to original
               compImg.src = compressedDataUrl;
             } else {
-              resolve({ img, dataUrl, lowRes });
+              resolve({ img, dataUrl });
             }
           })
-          .catch(() => resolve({ img, dataUrl, lowRes })); // fallback on compression error
+          .catch(() => resolve({ img, dataUrl })); // fallback on compression error
       };
 
       img.src = dataUrl;
@@ -111,4 +113,4 @@ export function processFile(file) {
   });
 }
 
-export { ALLOWED_TYPES, MAX_FILE_SIZE, isLowRes };
+export { ALLOWED_TYPES, MAX_FILE_SIZE };

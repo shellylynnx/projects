@@ -1,10 +1,33 @@
 // canvas.js — Canvas rendering and coverCrop logic
 
 const DPI = 300;
-const PAGE_W = Math.round(11 * DPI);   // 3300
-const PAGE_H = Math.round(8.5 * DPI);  // 2550
+const PAGE_SIZES = {
+  letter: { widthIn: 11, heightIn: 8.5 },
+  tabloid: { widthIn: 17, heightIn: 11 },
+};
 const COLS = 4;
 const ROWS = 2;
+
+/**
+ * Page dimensions in inches and in pixels at DPI for a size key.
+ */
+export function getPageSize(size = 'letter') {
+  const { widthIn, heightIn } = PAGE_SIZES[size];
+  return {
+    widthIn,
+    heightIn,
+    width: Math.round(widthIn * DPI),
+    height: Math.round(heightIn * DPI),
+  };
+}
+
+/**
+ * Pixel dimensions of one panel for a size key.
+ */
+export function getCellSize(size = 'letter') {
+  const { width, height } = getPageSize(size);
+  return { width: width / COLS, height: height / ROWS };
+}
 
 /**
  * Returns source crop coords so the image fills (w x h) without distortion.
@@ -34,17 +57,18 @@ export function coverCrop(imgW, imgH, targetW, targetH) {
 /**
  * Renders all images onto the hidden canvas and returns it.
  */
-export function renderCanvas(images, { showGridLines = false } = {}) {
+export function renderCanvas(images, { showGridLines = false, size = 'letter' } = {}) {
+  const { width: pageW, height: pageH } = getPageSize(size);
   const canvas = document.getElementById('canvas');
-  canvas.width = PAGE_W;
-  canvas.height = PAGE_H;
+  canvas.width = pageW;
+  canvas.height = pageH;
   const ctx = canvas.getContext('2d');
 
   ctx.fillStyle = '#ffffff';
-  ctx.fillRect(0, 0, PAGE_W, PAGE_H);
+  ctx.fillRect(0, 0, pageW, pageH);
 
-  const cellW = PAGE_W / COLS;
-  const cellH = PAGE_H / ROWS;
+  const cellW = pageW / COLS;
+  const cellH = pageH / ROWS;
 
   images.forEach((img, i) => {
     const col = i % COLS;
@@ -74,14 +98,14 @@ export function renderCanvas(images, { showGridLines = false } = {}) {
     ctx.strokeStyle = 'rgba(0,0,0,0.15)';
     ctx.lineWidth = 1;
     for (let c = 1; c < COLS; c++) {
-      ctx.beginPath(); ctx.moveTo(c * cellW, 0); ctx.lineTo(c * cellW, PAGE_H); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(c * cellW, 0); ctx.lineTo(c * cellW, pageH); ctx.stroke();
     }
     for (let r = 1; r < ROWS; r++) {
-      ctx.beginPath(); ctx.moveTo(0, r * cellH); ctx.lineTo(PAGE_W, r * cellH); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, r * cellH); ctx.lineTo(pageW, r * cellH); ctx.stroke();
     }
   }
 
   return canvas;
 }
 
-export { PAGE_W, PAGE_H, COLS, ROWS, DPI };
+export { COLS, ROWS, DPI };

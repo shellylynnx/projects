@@ -19,8 +19,8 @@
   <div id="output"></div>
   <div id="summary"></div>
   <script type="module">
-    import { coverCrop } from '../scripts/canvas.js';
-    import { validateFile } from '../scripts/files.js';
+    import { coverCrop, getPageSize, getCellSize } from '../scripts/canvas.js';
+    import { validateFile, isLowRes } from '../scripts/files.js';
     import { loadAllData, saveImage, removeStoredImage, clearAllData } from '../scripts/storage.js';
 
     const output = document.getElementById('output');
@@ -123,6 +123,29 @@
       const content = new Uint8Array(10 * 1024 * 1024);
       const file = new File([content], 'exact.jpg', { type: 'image/jpeg' });
       assert('File at exactly 10MB is accepted', validateFile(file) === null);
+    })();
+
+    // ─── Page size tests ─────────────────────────────────────────────────────
+
+    suite('Page sizes and low-resolution check');
+
+    (() => {
+      const letter = getPageSize('letter');
+      assert('Letter is 3300x2550 px at 300 DPI', letter.width === 3300 && letter.height === 2550);
+      const tabloid = getPageSize('tabloid');
+      assert('Tabloid is 5100x3300 px at 300 DPI', tabloid.width === 5100 && tabloid.height === 3300);
+      assert('Tabloid is 17 x 11 in', tabloid.widthIn === 17 && tabloid.heightIn === 11);
+      const cell = getCellSize('tabloid');
+      assert('Tabloid panel is 1275x1650 px', cell.width === 1275 && cell.height === 1650);
+    })();
+
+    (() => {
+      const img = (w, h) => ({ naturalWidth: w, naturalHeight: h });
+      assert('Letter: 825x1275 is not low-res', isLowRes(img(825, 1275), 'letter') === false);
+      assert('Letter: 824x1275 is low-res', isLowRes(img(824, 1275), 'letter') === true);
+      assert('Letter is the default size', isLowRes(img(1000, 1400)) === false);
+      assert('Tabloid: 1000x1400 is low-res', isLowRes(img(1000, 1400), 'tabloid') === true);
+      assert('Tabloid: 1275x1650 is not low-res', isLowRes(img(1275, 1650), 'tabloid') === false);
     })();
 
     // ─── localStorage tests ──────────────────────────────────────────────────
